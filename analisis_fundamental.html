@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis Fundamental — Horizonte 4 Años</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3e;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --accent: #6366f1;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --blue: #38bdf8;
+    --orange: #f97316;
+    --purple: #a855f7;
+    --teal: #14b8a6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; padding: 24px; }
+
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 500; transition: all .15s; white-space: nowrap; }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+  .tab.gams-tab { border-color: var(--teal); color: var(--teal); }
+  .tab.gams-tab.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card.gams-card { border-left: 3px solid var(--teal); }
+  .card.gams-card:hover { border-color: var(--teal); }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .ticker { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .company-name { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-start; justify-content: flex-end; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .badge.buy { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+  .badge.watch { background: rgba(234,179,8,.15); color: var(--yellow); border: 1px solid rgba(234,179,8,.3); }
+  .badge.caution { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .badge.neutral { background: rgba(136,146,164,.15); color: var(--muted); border: 1px solid rgba(136,146,164,.3); }
+  .badge.bond { background: rgba(56,189,248,.15); color: var(--blue); border: 1px solid rgba(56,189,248,.3); }
+  .badge.gams { background: rgba(20,184,166,.15); color: var(--teal); border: 1px solid rgba(20,184,166,.3); font-size: 10px; padding: 2px 7px; }
+  .badge.cartera { background: rgba(99,102,241,.15); color: #818cf8; border: 1px solid rgba(99,102,241,.3); font-size: 10px; padding: 2px 7px; }
+  .badge.both { background: rgba(99,102,241,.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,.35); font-size: 10px; padding: 2px 7px; white-space: nowrap; }
+
+  .tags { margin-bottom: 10px; }
+  .sector-tag { font-size: 10px; color: var(--muted); background: rgba(255,255,255,.05); padding: 2px 7px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-bottom: 3px; }
+
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .metric { background: rgba(255,255,255,.03); border-radius: 8px; padding: 8px 10px; }
+  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .metric-value { font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px; }
+  .metric-value.green { color: var(--green); }
+  .metric-value.yellow { color: var(--yellow); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.blue { color: var(--blue); }
+  .metric-value.teal { color: var(--teal); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+  .analysis { font-size: 12.5px; color: #b0bac9; line-height: 1.65; }
+  .analysis strong { color: var(--text); }
+  .risks { margin-top: 10px; }
+  .risk-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--red); margin-bottom: 4px; }
+  .risk-text { font-size: 12px; color: var(--muted); }
+
+  /* SUMMARY TABLE */
+  .summary-wrap { overflow-x: auto; }
+  .summary-table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  .summary-table th { text-align: left; padding: 9px 12px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  .summary-table td { padding: 9px 12px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,.04); vertical-align: middle; }
+  .summary-table tr:hover td { background: rgba(255,255,255,.02); }
+  .summary-table .ticker-cell { font-weight: 700; font-size: 14px; }
+  .summary-table tr.gams-row td { border-left: 3px solid rgba(20,184,166,.4); }
+
+  .score-bar { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { flex: 1; height: 5px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; min-width: 60px; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-fill.high { background: var(--green); }
+  .bar-fill.mid { background: var(--yellow); }
+  .bar-fill.low { background: var(--red); }
+  .bar-fill.blue-f { background: var(--blue); }
+  .bar-fill.teal-f { background: var(--teal); }
+  .score-num { font-size: 12px; font-weight: 700; min-width: 22px; text-align: right; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; font-size: 12px; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .gams-banner { background: rgba(20,184,166,.08); border: 1px solid rgba(20,184,166,.25); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: #b0bac9; }
+  .gams-banner strong { color: var(--teal); }
+
+  footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+
+  /* SORTABLE COLUMN */
+  .summary-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+  .summary-table th.sortable:hover { color: var(--text); }
+  .sort-arrow { display: inline-block; margin-left: 4px; font-size: 10px; opacity: 0.4; transition: opacity .15s; }
+  .summary-table th.sort-asc .sort-arrow,
+  .summary-table th.sort-desc .sort-arrow { opacity: 1; color: var(--teal); }
+  .summary-table th.sort-desc .sort-arrow { display: inline-block; transform: rotate(180deg); }
+
+  /* PESO COLUMN */
+  .peso-cell { white-space: nowrap; }
+  .peso-wrap { display: flex; align-items: center; gap: 7px; min-width: 90px; }
+  .peso-bar-bg { flex: 1; height: 5px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+  .peso-bar-fill { height: 100%; border-radius: 3px; background: rgba(255,255,255,.25); }
+  .peso-num { font-size: 12px; font-weight: 700; color: var(--muted); min-width: 38px; text-align: right; }
+  .peso-num.big { color: var(--text); }
+</style>
+</head>
+<body>
+
+<h1>📊 Análisis Fundamental — Portafolio Sebastián</h1>
+<p class="subtitle">Horizonte de inversión: 4 años &nbsp;·&nbsp; Actualizado junio 2026 &nbsp;·&nbsp; Datos: SEC filings, GuruFocus, StockAnalysis &nbsp;·&nbsp; <span style="color:var(--teal)">■</span> GAMS = componentes del FCI en USD</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('resumen', this)">📋 Resumen</div>
+  <div class="tab" onclick="showTab('latam', this)">🌎 LATAM Tech/Fintech</div>
+  <div class="tab" onclick="showTab('global', this)">🌐 Global</div>
+  <div class="tab" onclick="showTab('argentina', this)">🇦🇷 Acciones ARG</div>
+  <div class="tab gams-tab" onclick="showTab('gams', this)">💼 FCI GAMS</div>
+  <div class="tab" onclick="showTab('bonos', this)">📄 Bonos ARG</div>
+</div>
+
+<!-- ===== RESUMEN ===== -->
+<div id="resumen" class="section active">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Compra / Atractivo</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Monitorear</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Cautela</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Bono / Renta fija</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div> FCI GAMS (en USD)</div>
+  </div>
+  <div class="card summary-wrap">
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Empresa</th>
+          <th>P/E (TTM)</th>
+          <th>Crecim. Rev.</th>
+          <th class="sortable" id="th-tags" onclick="sortByTag()">Tags <span class="sort-arrow" id="arrow-tags">▲</span></th>
+          <th class="sortable" id="th-peso" onclick="sortByPeso()">% Cartera <span class="sort-arrow" id="arrow-peso">▲</span></th>
+          <th>Señal</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="ticker-cell">MELI</td><td>MercadoLibre</td><td>~42x</td><td style="color:var(--green)">+49% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="4.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:45%"></div></div><span class="peso-num big">4.0%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:88%"></div></div><span class="score-num" style="color:var(--green)">88</span></div></td></tr>
+        <tr><td class="ticker-cell">NU</td><td>Nu Holdings</td><td>~24x</td><td style="color:var(--green)">+45% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="4.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:45%"></div></div><span class="peso-num big">4.0%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:85%"></div></div><span class="score-num" style="color:var(--green)">85</span></div></td></tr>
+        <tr><td class="ticker-cell">V</td><td>Visa Inc.</td><td>~28x</td><td style="color:var(--green)">+15% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="2.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:23%"></div></div><span class="peso-num">2.0%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:82%"></div></div><span class="score-num" style="color:var(--green)">82</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">VIST / VISTA</td><td>Vista Energy</td><td>~20x</td><td style="color:var(--green)">+50% (52w)</td><td><span class="badge both">Cartera / GAMS</span></td><td class="peso-cell" data-peso="8.85"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:100%; background:var(--teal); opacity:.7"></div></div><span class="peso-num big" style="color:var(--teal)">8.85%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:80%"></div></div><span class="score-num" style="color:var(--green)">80</span></div></td></tr>
+        <tr><td class="ticker-cell">MSFT</td><td>Microsoft</td><td>~23x</td><td style="color:var(--green)">+13% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="1.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:11%"></div></div><span class="peso-num">1.0%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:80%"></div></div><span class="score-num" style="color:var(--green)">80</span></div></td></tr>
+        <tr><td class="ticker-cell">UBER</td><td>Uber Technologies</td><td>~17x</td><td style="color:var(--green)">+20%+ YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="3.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:34%"></div></div><span class="peso-num">3.0%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:78%"></div></div><span class="score-num" style="color:var(--green)">78</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">TGS</td><td>Transp. Gas del Sur</td><td>N/D (ARS)</td><td style="color:var(--green)">+41% YoY</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="2.25"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:25%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">2.25%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:76%"></div></div><span class="score-num" style="color:var(--green)">76</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">PAMP / PAMPA</td><td>Pampa Energía</td><td>~12x</td><td style="color:var(--green)">EBITDA +48%</td><td><span class="badge both">Cartera / GAMS</span></td><td class="peso-cell" data-peso="7.05"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:80%; background:var(--teal); opacity:.7"></div></div><span class="peso-num big" style="color:var(--teal)">7.05%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:75%"></div></div><span class="score-num" style="color:var(--green)">75</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">YPFD / YPF</td><td>YPF S.A.</td><td>~8x</td><td style="color:var(--green)">EBITDA +28%</td><td><span class="badge both">Cartera / GAMS</span></td><td class="peso-cell" data-peso="6.25"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:71%; background:var(--teal); opacity:.7"></div></div><span class="peso-num big" style="color:var(--teal)">6.25%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:74%"></div></div><span class="score-num" style="color:var(--green)">74</span></div></td></tr>
+        <tr><td class="ticker-cell">SPOT</td><td>Spotify</td><td>~30x</td><td style="color:var(--green)">+15% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="1.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:11%"></div></div><span class="peso-num">1.0%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:72%"></div></div><span class="score-num" style="color:var(--green)">72</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">MACRO / BMA</td><td>Banco Macro</td><td>N/D (ARG)</td><td style="color:var(--green)">Banca rec.</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.35"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:15%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.35%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:70%"></div></div><span class="score-num" style="color:var(--green)">70</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">TELECOM / TEO</td><td>Telecom Argentina</td><td>~23x</td><td style="color:var(--green)">+34% YoY</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.35"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:15%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.35%</span></div></td><td><span class="badge buy">COMPRA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill high" style="width:68%"></div></div><span class="score-num" style="color:var(--green)">68</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">GEOPARK / GPRK</td><td>GeoPark Ltd.</td><td>~6x</td><td style="color:var(--yellow)">-5% YoY prod.</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.80"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:20%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.80%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:65%"></div></div><span class="score-num" style="color:var(--yellow)">65</span></div></td></tr>
+        <tr><td class="ticker-cell">STNE</td><td>StoneCo</td><td>~4.4x</td><td style="color:var(--yellow)">+6.5% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="2.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:23%"></div></div><span class="peso-num">2.0%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:60%"></div></div><span class="score-num" style="color:var(--yellow)">60</span></div></td></tr>
+        <tr><td class="ticker-cell">ADBE</td><td>Adobe Inc.</td><td>~14x</td><td style="color:var(--yellow)">+9% YoY</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="3.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:34%"></div></div><span class="peso-num">3.0%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:58%"></div></div><span class="score-num" style="color:var(--yellow)">58</span></div></td></tr>
+        <tr><td class="ticker-cell">XP</td><td>XP Inc.</td><td>~10x</td><td style="color:var(--yellow)">Moderado</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="2.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:23%"></div></div><span class="peso-num">2.0%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:55%"></div></div><span class="score-num" style="color:var(--yellow)">55</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">PAE</td><td>Pan American Energy</td><td>N/D (priv.)</td><td style="color:var(--yellow)">Privada</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="3.60"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:41%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">3.60%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:55%"></div></div><span class="score-num" style="color:var(--yellow)">55</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">CRESUD / CRESY</td><td>Cresud S.A.</td><td>N/D</td><td style="color:var(--yellow)">Agro + Real est.</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.35"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:15%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.35%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:52%"></div></div><span class="score-num" style="color:var(--yellow)">52</span></div></td></tr>
+        <tr><td class="ticker-cell">METR</td><td>MetroGAS</td><td>N/D</td><td style="color:var(--yellow)">Tarifas en alza</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="5.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:57%"></div></div><span class="peso-num big">5.0%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:52%"></div></div><span class="score-num" style="color:var(--yellow)">52</span></div></td></tr>
+        <tr><td class="ticker-cell">ECOG</td><td>ECOGAS Inversiones</td><td>N/D</td><td style="color:var(--yellow)">Regulado</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="4.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:45%"></div></div><span class="peso-num big">4.0%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:50%"></div></div><span class="score-num" style="color:var(--yellow)">50</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">TECPETROL</td><td>Tecpetrol S.A.</td><td>N/D (priv.)</td><td style="color:var(--yellow)">Privada</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="2.25"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:25%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">2.25%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:50%"></div></div><span class="score-num" style="color:var(--yellow)">50</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">OLDELVAL</td><td>Oleoductos del Valle</td><td>N/D (priv.)</td><td style="color:var(--yellow)">Infraest.</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.80"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:20%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.80%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:48%"></div></div><span class="score-num" style="color:var(--yellow)">48</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">YPF LUZ</td><td>YPF Luz S.A.</td><td>N/D (priv.)</td><td style="color:var(--yellow)">Renovables</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.35"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:15%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.35%</span></div></td><td><span class="badge watch">MONITOREAR</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill mid" style="width:48%"></div></div><span class="score-num" style="color:var(--yellow)">48</span></div></td></tr>
+        <tr class="gams-row"><td class="ticker-cell">SOBERANOS</td><td>Bonos soberanos ARG</td><td>—</td><td>Cat. renta fija</td><td><span class="badge gams">GAMS</span></td><td class="peso-cell" data-peso="1.80"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:20%; background:var(--teal); opacity:.7"></div></div><span class="peso-num" style="color:var(--teal)">1.80%</span></div></td><td><span class="badge bond">BONO</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill teal-f" style="width:60%"></div></div><span class="score-num" style="color:var(--teal)">60</span></div></td></tr>
+        <tr><td class="ticker-cell">PAGS</td><td>PagSeguro/PagBank</td><td>~6x</td><td style="color:var(--yellow)">Bajo</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="2.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:23%"></div></div><span class="peso-num">2.0%</span></div></td><td><span class="badge caution">CAUTELA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill low" style="width:42%"></div></div><span class="score-num" style="color:var(--red)">42</span></div></td></tr>
+        <tr><td class="ticker-cell">JD</td><td>JD.com</td><td>~8x</td><td style="color:var(--red)">+4.9% / NI -53%</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="3.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:34%"></div></div><span class="peso-num">3.0%</span></div></td><td><span class="badge caution">CAUTELA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill low" style="width:40%"></div></div><span class="score-num" style="color:var(--red)">40</span></div></td></tr>
+        <tr><td class="ticker-cell">TSLA</td><td>Tesla Inc.</td><td>~397x</td><td style="color:var(--red)">-3% (FY25)</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="3.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:34%"></div></div><span class="peso-num">3.0%</span></div></td><td><span class="badge caution">CAUTELA</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill low" style="width:35%"></div></div><span class="score-num" style="color:var(--red)">35</span></div></td></tr>
+        <tr><td class="ticker-cell">TZX27</td><td>BONCER 30/06/2027</td><td>—</td><td>CER +2/4%</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="4.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:45%"></div></div><span class="peso-num big">4.0%</span></div></td><td><span class="badge bond">BONO CER</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill blue-f" style="width:65%"></div></div><span class="score-num" style="color:var(--blue)">65</span></div></td></tr>
+        <tr><td class="ticker-cell">AO27</td><td>Bonar 2027 (USD)</td><td>—</td><td>~6% TNA USD</td><td><span class="badge cartera">Cartera</span></td><td class="peso-cell" data-peso="4.0"><div class="peso-wrap"><div class="peso-bar-bg"><div class="peso-bar-fill" style="width:45%"></div></div><span class="peso-num big">4.0%</span></div></td><td><span class="badge bond">BONO USD</span></td><td><div class="score-bar"><div class="bar-bg"><div class="bar-fill blue-f" style="width:70%"></div></div><span class="score-num" style="color:var(--blue)">70</span></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:10px; font-size:12px; color:var(--muted)">⚠️ No es asesoramiento financiero. El score es relativo dentro de este universo. &nbsp;·&nbsp; <span style="color:#818cf8">■</span> Cartera = posición directa &nbsp;·&nbsp; <span style="color:var(--teal)">■</span> GAMS = FCI en USD &nbsp;·&nbsp; <span style="color:#a5b4fc">■</span> Cartera / GAMS = ambos.</p>
+</div>
+
+<!-- ===== LATAM TECH/FINTECH ===== -->
+<div id="latam" class="section">
+  <div class="grid">
+    <div class="card"><div class="card-header"><div><div class="ticker">MELI</div><div class="company-name">MercadoLibre Inc. · NASDAQ</div></div><div class="badges"><span class="badge buy">COMPRA</span></div></div><div class="tags"><span class="sector-tag">E-Commerce</span><span class="sector-tag">Fintech</span><span class="sector-tag">LATAM</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value yellow">42x</div></div><div class="metric"><div class="metric-label">P/E Fwd</div><div class="metric-value">~40x</div></div><div class="metric"><div class="metric-label">Rev. Q1'26</div><div class="metric-value green">$8.85B</div></div><div class="metric"><div class="metric-label">Crec. YoY</div><div class="metric-value green">+49%</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> MELI es el Amazon + Nubank de América Latina. Q1'26 registró el mayor crecimiento en casi 4 años. Su cartera de crédito casi se duplicó a $14.6B, el TPV creció +50% y el GMV +42%. Margen operativo comprimido a 6.9% por inversión deliberada en logística y tarjetas. Analistas como TIKR estiman valor de ~$8.449 en 2030 desde los $1.610 actuales (+425%).</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Compresión de márgenes; regulación en Brasil; FX Argentina; competencia Amazon/Shopify.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">NU</div><div class="company-name">Nu Holdings Ltd. · NYSE</div></div><div class="badges"><span class="badge buy">COMPRA</span></div></div><div class="tags"><span class="sector-tag">Fintech</span><span class="sector-tag">Banking</span><span class="sector-tag">LATAM</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E Fwd</div><div class="metric-value green">~15x</div></div><div class="metric"><div class="metric-label">5Y Fwd P/E</div><div class="metric-value green">~6x</div></div><div class="metric"><div class="metric-label">ROE Q4'25</div><div class="metric-value green">33%</div></div><div class="metric"><div class="metric-label">Clientes</div><div class="metric-value green">135M</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> Banco privado #1 en Brasil con ratio de eficiencia del 18% (vs 61% en 2022). En México alcanzó break-even en Q1'26 con 15M clientes. ROE del 33% y net income de $3.2B. Proyecciones de triplicar ingresos netos a $10B en 5 años = P/E forward de ~6x. Earnings forecast +84% en 2 años según Simply Wall St.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Ciclo de crédito Brasil; FX BRL/USD; regulación; competencia de bancos tradicionales y MELI.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">PAGS</div><div class="company-name">PagSeguro (PagBank) · NYSE</div></div><div class="badges"><span class="badge caution">CAUTELA</span></div></div><div class="tags"><span class="sector-tag">Fintech</span><span class="sector-tag">Pagos</span><span class="sector-tag">Brasil</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~6x</div></div><div class="metric"><div class="metric-label">P/S</div><div class="metric-value green">~1x</div></div><div class="metric"><div class="metric-label">Crec. Rev.</div><div class="metric-value yellow">Bajo</div></div><div class="metric"><div class="metric-label">Competencia</div><div class="metric-value red">Intensa</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Valuación muy baja (P/E 6x, P/S ~1x) pero crecimiento modesto frente a NU y STNE. La transición a banco digital captó depósitos pero el retorno de la inversión en usuarios no es claro. Potencial re-rating si logra diferenciarse, pero difícil frente a Nubank.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Compresión frente a NU; BRL; desaceleración crecimiento; trampa de valor.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">XP</div><div class="company-name">XP Inc. · NASDAQ</div></div><div class="badges"><span class="badge watch">MONITOREAR</span></div></div><div class="tags"><span class="sector-tag">Wealth Mgmt</span><span class="sector-tag">Brokers</span><span class="sector-tag">Brasil</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~10x</div></div><div class="metric"><div class="metric-label">Modelo</div><div class="metric-value">Comisiones</div></div><div class="metric"><div class="metric-label">Posición</div><div class="metric-value yellow">Líder local</div></div><div class="metric"><div class="metric-label">Riesgo</div><div class="metric-value yellow">Tasa SELIC</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Plataforma de inversiones líder en Brasil con modelo de asesores independientes. Valuación atractiva (~10x P/E). Depende del ciclo de tasas: tasas SELIC altas reducen apetito por equity. A 4 años, si Brasil normaliza tasas y profundiza la bancarización, XP tiene buen recorrido.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Ciclo SELIC; competencia de bancos y NU; concentración Brasil.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">STNE</div><div class="company-name">StoneCo Ltd. · NASDAQ</div></div><div class="badges"><span class="badge watch">MONITOREAR</span></div></div><div class="tags"><span class="sector-tag">Fintech</span><span class="sector-tag">Pagos SME</span><span class="sector-tag">Brasil</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~4.4x</div></div><div class="metric"><div class="metric-label">ROE Q1'26</div><div class="metric-value yellow">18.6%</div></div><div class="metric"><div class="metric-label">Crec. Rev.</div><div class="metric-value yellow">+6.5% YoY</div></div><div class="metric"><div class="metric-label">Margen neto</div><div class="metric-value yellow">15.3%</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Extremadamente barato (P/E 4.4x) pero crecimiento decelerado. Venta de Linx (feb-2026) simplificó el negocio. Margen bruto cayó -2.8pp YoY en Q1'26. La valuación deprimida puede ser trampa de valor o una oportunidad de re-rating si recupera cuota en PYMEs brasileñas.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Desaceleración; pérdida mercado frente a NU y Mercado Pago; márgenes en caída.</div></div></div>
+  </div>
+</div>
+
+<!-- ===== GLOBAL ===== -->
+<div id="global" class="section">
+  <div class="grid">
+    <div class="card"><div class="card-header"><div><div class="ticker">ADBE</div><div class="company-name">Adobe Inc. · NASDAQ</div></div><div class="badges"><span class="badge watch">MONITOREAR</span></div></div><div class="tags"><span class="sector-tag">Software</span><span class="sector-tag">AI</span><span class="sector-tag">Creatividad</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~14x</div></div><div class="metric"><div class="metric-label">Prom. P/E 5Y</div><div class="metric-value red">38x</div></div><div class="metric"><div class="metric-label">Crec. Rev.</div><div class="metric-value yellow">~+9% YoY</div></div><div class="metric"><div class="metric-label">vs histórico</div><div class="metric-value green">-63% descuento</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Adobe cotiza en su mínimo histórico de P/E (~14x vs 38x promedio 5 años), reflejando miedo a la disrupción por IA generativa. Sin embargo, Firefly integrado y suscripciones pegajosas son fortalezas. A 4 años: oportunidad si se cree en la resiliencia del modelo. La pregunta central es si logra monetizar IA sin canibalizar su base.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Disrupción IA (Midjourney, Sora); crecimiento desacelerado; competencia de Canva y herramientas IA gratuitas.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">TSLA</div><div class="company-name">Tesla Inc. · NASDAQ</div></div><div class="badges"><span class="badge caution">CAUTELA</span></div></div><div class="tags"><span class="sector-tag">EV / Autos</span><span class="sector-tag">Energía</span><span class="sector-tag">AI/Robotics</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value red">~397x</div></div><div class="metric"><div class="metric-label">P/E Fwd</div><div class="metric-value red">~190x</div></div><div class="metric"><div class="metric-label">Rev. FY25</div><div class="metric-value red">-3% YoY</div></div><div class="metric"><div class="metric-label">Robotaxi activos</div><div class="metric-value yellow">135 veh.</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> A P/E 397x la tesis es 100% especulativa (Robotaxi/Cybercab + Optimus). El negocio automotriz cayó 3% en FY25 con BYD superando a Tesla en volumen global. La energía ($12.77B, 30% margen) es el único segmento sólido. UBS mantiene Sell con target $247. Solo para inversores con alta tolerancia al riesgo y creencia en la tesis de AI/autonomy.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Valuación extrema; pérdida cuota EV ante BYD; riesgo reputacional Musk; retrasos Robotaxi/Optimus; márgenes automotrices en caída.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">JD</div><div class="company-name">JD.com Inc. · NASDAQ</div></div><div class="badges"><span class="badge caution">CAUTELA</span></div></div><div class="tags"><span class="sector-tag">E-Commerce</span><span class="sector-tag">China</span><span class="sector-tag">Logística</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~8x</div></div><div class="metric"><div class="metric-label">Rev. Q1'26</div><div class="metric-value yellow">+4.9% YoY</div></div><div class="metric"><div class="metric-label">Net Income Q1'26</div><div class="metric-value red">-53% YoY</div></div><div class="metric"><div class="metric-label">Riesgo geo.</div><div class="metric-value red">Alto</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Barato (~8x P/E) pero con ingresos netos cayendo 53% YoY en Q1'26. Desaceleración del consumo chino, competencia de Alibaba y PDD, y el riesgo geopolítico US-China son factores negativos. A 4 años requiere creer en recuperación del consumidor chino y sin escalada geopolítica.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Geopolítico US-China (delisting); debilidad consumidor chino; competencia intensa; regulación gobierno chino; FX CNY.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">UBER</div><div class="company-name">Uber Technologies · NYSE</div></div><div class="badges"><span class="badge buy">COMPRA</span></div></div><div class="tags"><span class="sector-tag">Movilidad</span><span class="sector-tag">Delivery</span><span class="sector-tag">Plataforma</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~17x</div></div><div class="metric"><div class="metric-label">PEG ratio</div><div class="metric-value green">0.68</div></div><div class="metric"><div class="metric-label">FCF TTM</div><div class="metric-value green">$9.8B</div></div><div class="metric"><div class="metric-label">Target consens.</div><div class="metric-value green">$104 (+50%)</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> P/E 17x con PEG 0.68 (crecimiento barato), FCF $9.8B, ROE 35%. El mercado subestima la transición de Uber a negocio altamente rentable. Consenso analistas Strong Buy con target $104 desde ~$70. Expansión de Delivery y potencial integración de Autonomy/Waymo son catalizadores adicionales a 4 años.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Competencia Waymo/Tesla Robotaxi; regulación laboral (choferes); DoorDash en Delivery; deuda neta negativa.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">V</div><div class="company-name">Visa Inc. · NYSE</div></div><div class="badges"><span class="badge buy">COMPRA</span></div></div><div class="tags"><span class="sector-tag">Pagos</span><span class="sector-tag">Red global</span><span class="sector-tag">Blue Chip</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~28x</div></div><div class="metric"><div class="metric-label">vs prom. 10Y</div><div class="metric-value yellow">vs 33x histórico</div></div><div class="metric"><div class="metric-label">Rev. Q1'26</div><div class="metric-value green">$10.9B (+15%)</div></div><div class="metric"><div class="metric-label">GF Score</div><div class="metric-value green">94/100</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> El negocio de mayor calidad del universo. Cotiza 15% bajo su P/E histórico de 10 años, con GuruFocus estimando valor intrínseco de $402 vs precio actual ~$325. Red de pagos en 200+ países, márgenes operativos >60%, crecimiento constante del volumen digital global. Ancla conservadora ideal del portafolio a 4 años.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Riesgo antitrust; competencia crypto/stablecoins en el largo plazo; desaceleración volumen en recesión.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">MSFT</div><div class="company-name">Microsoft Corporation · NASDAQ</div></div><div class="badges"><span class="badge buy">COMPRA</span></div></div><div class="tags"><span class="sector-tag">Cloud</span><span class="sector-tag">AI Enterprise</span><span class="sector-tag">Mega-cap</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~23x</div></div><div class="metric"><div class="metric-label">P/FCF</div><div class="metric-value yellow">~41x</div></div><div class="metric"><div class="metric-label">Precio</div><div class="metric-value">~$393</div></div><div class="metric"><div class="metric-label">Capex 2026</div><div class="metric-value yellow">$190B</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> La mega-cap tech más barata a 23x P/E. Azure + Copilot + OpenAI le dan liderazgo en IA empresarial difícil de replicar. El capex masivo ($190B en 2026) presiona FCF temporalmente pero construye infraestructura para dominar la era AI. Moat excepcional: Office365, Teams, Azure, LinkedIn, Xbox. Apuesta segura a 4 años.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Capex consume hasta 78% del FCF operativo; riesgo de retorno de inversiones en IA; competencia Google Cloud y AWS.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">SPOT</div><div class="company-name">Spotify Technology · NYSE</div></div><div class="badges"><span class="badge buy">COMPRA</span></div></div><div class="tags"><span class="sector-tag">Streaming</span><span class="sector-tag">Audio</span><span class="sector-tag">Publicidad</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~30x</div></div><div class="metric"><div class="metric-label">PEG ratio</div><div class="metric-value green">0.96</div></div><div class="metric"><div class="metric-label">ROE</div><div class="metric-value green">38%</div></div><div class="metric"><div class="metric-label">Perf. 52w</div><div class="metric-value red">-22.5%</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> Spotify finalmente es rentable y eficiente (ROE 38%, ROIC 96.5%). PEG 0.96 indica crecimiento subvaluado. La caída del -22.5% en 52 semanas crea oportunidad de entrada. Moat: datos de escucha, playlists personalizadas, monopolio virtual en podcasting. Segmento publicidad y audiobooks son catalizadores adicionales.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Alta dependencia de licencias discográficas; competencia Apple Music/YouTube; ciclos publicitarios.</div></div></div>
+  </div>
+</div>
+
+<!-- ===== ACCIONES ARG ===== -->
+<div id="argentina" class="section">
+  <div class="grid">
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">YPFD / YPF</div><div class="company-name">YPF S.A. · NYSE ADR / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Oil & Gas</span><span class="sector-tag">Vaca Muerta</span><span class="sector-tag">Argentina</span></div><div class="metrics"><div class="metric"><div class="metric-label">ADR precio</div><div class="metric-value">~$56</div></div><div class="metric"><div class="metric-label">Target Allaria</div><div class="metric-value green">$68 ADR</div></div><div class="metric"><div class="metric-label">Upside est.</div><div class="metric-value green">~+58%</div></div><div class="metric"><div class="metric-label">EBITDA Q1'26</div><div class="metric-value green">+28% YoY</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> YPF es el jugador central en la revolución energética argentina. EBITDA adj. Q1'26 creció +28% YoY a $1.594M. Lifting cost cayó 44% interanual a $9.6/boe. Chevron, YPF y Pluspetrol avanzan en proyecto NGL de $3B en Vaca Muerta. Target Allaria $68 (upside 58%). DCF analysis ven upside 51%+.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Riesgo soberano; demanda legal $16B; precio Brent; restricciones exportación.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">PAMP / PAM</div><div class="company-name">Pampa Energía S.A. · NYSE / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Energía Eléctr.</span><span class="sector-tag">Gas upstream</span><span class="sector-tag">Argentina</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E</div><div class="metric-value green">~12.5x</div></div><div class="metric"><div class="metric-label">ADR precio</div><div class="metric-value">~$83.50</div></div><div class="metric"><div class="metric-label">Target HSBC</div><div class="metric-value green">$97 (Buy)</div></div><div class="metric"><div class="metric-label">EBITDA adj.</div><div class="metric-value green">+48% YoY</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> Conglomerado energético con 4,970 MW de generación eléctrica, Transener (85% transmisión alta tensión) y gas upstream. S&P y Fitch ambos mejoraron ratings a "B/B+" en 2026. Target Allaria $143 (upside 65%), HSBC Buy $97. Colocación de $200M en notas al 5.49% con demanda 2x.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">EPS Q1'26 decepcionó; riesgo regulatorio tarifario; macro Argentina; alto capex.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">METR</div><div class="company-name">MetroGAS S.A. · BYMA</div></div><div class="badges"><span class="badge watch">MONITOREAR</span></div></div><div class="tags"><span class="sector-tag">Gas Distribución</span><span class="sector-tag">Regulado</span><span class="sector-tag">GBA/CABA</span></div><div class="metrics"><div class="metric"><div class="metric-label">Zona</div><div class="metric-value">GBA / CABA</div></div><div class="metric"><div class="metric-label">Catalizador</div><div class="metric-value green">Tarifas USD</div></div><div class="metric"><div class="metric-label">Perfil</div><div class="metric-value yellow">Defensivo</div></div><div class="metric"><div class="metric-label">Liquidez</div><div class="metric-value yellow">Media</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Distribuidora de gas en CABA y GBA bajo normalización tarifaria del gobierno Milei. Negocio esencialmente regulado con flujos predecibles si tarifas siguen ajustando hacia precios en USD. Menor upside que VIST/YPFD/PAMP pero también menor volatilidad. Bueno para diversificar exposición Argentina.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Reversión política tarifaria; riesgo regulatorio; dependencia precio gas; riesgo soberano.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">ECOG</div><div class="company-name">ECOGAS Inversiones S.A. · BYMA</div></div><div class="badges"><span class="badge watch">MONITOREAR</span></div></div><div class="tags"><span class="sector-tag">Gas Distribución</span><span class="sector-tag">Regulado</span><span class="sector-tag">Córdoba/Cuyo</span></div><div class="metrics"><div class="metric"><div class="metric-label">Zona</div><div class="metric-value">Córdoba, Cuyo</div></div><div class="metric"><div class="metric-label">Catalizador</div><div class="metric-value green">Tarifas</div></div><div class="metric"><div class="metric-label">Liquidez</div><div class="metric-value red">Baja</div></div><div class="metric"><div class="metric-label">Cobertura</div><div class="metric-value red">Baja</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> ECOGAS opera distribución de gas en Córdoba, Mendoza y San Juan. Mismo catalizador que METR pero menor liquidez bursátil y menor cobertura. Para un portafolio de 4 años y considerando liquidez, PAMP e YPFD ofrecen mejor relación liquidez/upside dentro del espacio argentino.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Baja liquidez; riesgo regulatorio; macro Argentina; menor visibilidad institucional.</div></div></div>
+  </div>
+</div>
+
+<!-- ===== FCI GAMS ===== -->
+<div id="gams" class="section">
+  <div class="gams-banner">
+    <strong>💼 FCI GAMS — Fondo Común de Inversión en USD</strong><br>
+    Los siguientes activos componen el FCI GAMS. Todos operan con exposición a Argentina (energía, gas, agro, telecomunicaciones y banca) y están denominados o son accesibles en dólares. Los activos duplicados con la sección Argentina ya fueron analizados allí; acá se agrega contexto específico desde la óptica del fondo.
+  </div>
+  <div class="grid">
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">VISTA / VIST</div><div class="company-name">Vista Energy · NYSE / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Oil & Gas</span><span class="sector-tag">Vaca Muerta</span><span class="sector-tag">Puro-play shale</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E TTM</div><div class="metric-value green">~20x</div></div><div class="metric"><div class="metric-label">Lifting cost hub</div><div class="metric-value green">$4.2/boe</div></div><div class="metric"><div class="metric-label">Target analistas</div><div class="metric-value green">$86–100</div></div><div class="metric"><div class="metric-label">Perf. 52w</div><div class="metric-value green">+50%</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis dentro del GAMS:</strong> Pure play de Vaca Muerta con el lifting cost más bajo de la región. J.P. Morgan y Danelfin mantienen Buy. Adquisiciones de Bandurria Sur y Bajo del Toro elevaron el outlook 2026-2028. Proyecto NGL de $3B con Chevron y Pluspetrol beneficia directamente a Vista. Es el holding más puro sobre shale argentino.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Precio del petróleo (sensible a Brent); FCF negativo en período de expansión; alto capex; deuda; riesgo político Argentina.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">PAMPA ENERGIA</div><div class="company-name">Pampa Energía S.A. · NYSE (PAM) / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Energía integrada</span><span class="sector-tag">Generación</span><span class="sector-tag">Gas upstream</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E</div><div class="metric-value green">~12.5x</div></div><div class="metric"><div class="metric-label">EBITDA adj. Q1'26</div><div class="metric-value green">+48% YoY</div></div><div class="metric"><div class="metric-label">Rating Fitch</div><div class="metric-value green">B+ estable</div></div><div class="metric"><div class="metric-label">Target Allaria</div><div class="metric-value green">$143 ADR</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis dentro del GAMS:</strong> El holding energético más diversificado de Argentina (generación + transmisión + gas + distribución). La capacidad de financiarse con $200M al 5.49% con 2x de demanda muestra acceso fluido al mercado. Dentro del GAMS es la posición de menor riesgo del segmento energético.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">EPS Q1'26 decepcionó por capex elevado; regulación tarifaria; macro Argentina.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">PAE</div><div class="company-name">Pan American Energy · No cotiza en bolsa</div></div><div class="badges"><span class="badge watch">MONITOREAR</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Oil & Gas</span><span class="sector-tag">E&P</span><span class="sector-tag">Empresa privada</span></div><div class="metrics"><div class="metric"><div class="metric-label">Estructura</div><div class="metric-value yellow">Privada</div></div><div class="metric"><div class="metric-label">Dueños</div><div class="metric-value">BP + Bridas</div></div><div class="metric"><div class="metric-label">Activos</div><div class="metric-value">ARG/Bolivia</div></div><div class="metric"><div class="metric-label">Acceso</div><div class="metric-value teal">Vía FCI GAMS</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Pan American Energy es una JV entre BP y el grupo Bridas (familia Bulgheroni). Es una de las mayores productoras de petróleo y gas de Argentina, con operaciones también en Bolivia. Al ser privada, no cotiza en bolsa directamente — la exposición dentro del GAMS es a través de deuda corporativa o instrumentos privados.<br><br>Es uno de los operadores con mayor capacidad técnica y mejores reservas en el país. El contexto de Vaca Muerta y el RIGI son catalizadores positivos.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Sin liquidez bursátil directa; riesgo país Argentina; precio del crudo; riesgo boliviano.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">TGS</div><div class="company-name">Transportadora de Gas del Sur · NYSE / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Gas Transporte</span><span class="sector-tag">NGL</span><span class="sector-tag">Infraestructura</span></div><div class="metrics"><div class="metric"><div class="metric-label">Rev. Q1'26</div><div class="metric-value green">+41% YoY</div></div><div class="metric"><div class="metric-label">Net income Q1'26</div><div class="metric-value green">+40% YoY</div></div><div class="metric"><div class="metric-label">Margen neto</div><div class="metric-value green">33%</div></div><div class="metric"><div class="metric-label">Target analistas</div><div class="metric-value green">$37.20 ADR</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> TGS opera el mayor sistema de gasoductos de América Latina (más del 60% del gas transportado en Argentina). En Q1'26 mostró resultados excepcionales: ingresos +41% YoY, utilidad +40%, margen 33%. Además, logró la aprobación RIGI para una expansión de gasoducto de $550M (Perito Moreno), que entrará en servicio en mayo 2027.<br><br>La combinación de transporte regulado (flujos estables) más NGL (líquidos de gas, mayor rentabilidad) la posiciona como una de las mejores historias de infraestructura argentina. 4 analistas recomienda comprar con target promedio de $37.20 (+28% upside desde $29).</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Lag regulatorio en actualización tarifaria; volatilidad precios exportación gas/NGL; deuda emitida para expansión; Argentina macro.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">TECPETROL</div><div class="company-name">Tecpetrol S.A. · No cotiza (BYMA deuda)</div></div><div class="badges"><span class="badge watch">MONITOREAR</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Oil & Gas</span><span class="sector-tag">E&P</span><span class="sector-tag">Grupo Techint</span></div><div class="metrics"><div class="metric"><div class="metric-label">Estructura</div><div class="metric-value yellow">Privada</div></div><div class="metric"><div class="metric-label">Grupo</div><div class="metric-value">Techint</div></div><div class="metric"><div class="metric-label">Operaciones</div><div class="metric-value">ARG/PERÚ/MEX</div></div><div class="metric"><div class="metric-label">Acceso</div><div class="metric-value teal">Vía FCI GAMS</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Tecpetrol es la subsidiaria de E&P del Grupo Techint (dueña también de Tenaris y Ternium), con operaciones de shale en Vaca Muerta (bloque Fortín de Piedra), uno de los más productivos de Argentina. Empresa privada, no lista en bolsa. La exposición dentro del GAMS es a través de obligaciones negociables (ONs) corporativas.<br><br>Al ser parte de Techint, tiene acceso a financiamiento internacional y capital técnico de primer nivel. Su posición en Fortín de Piedra le da una de las mejores ubicaciones dentro del shale gas argentino.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Sin acción pública; riesgo corporativo privado; riesgo Argentina; precio del gas natural.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">YPF / YPF LUZ</div><div class="company-name">YPF S.A. + YPF Luz S.A. · NYSE / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge watch">MONITOREAR</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Oil & Gas</span><span class="sector-tag">Renovables</span><span class="sector-tag">Energía eléctrica</span></div><div class="metrics"><div class="metric"><div class="metric-label">YPF ADR</div><div class="metric-value">~$56</div></div><div class="metric"><div class="metric-label">YPF Luz</div><div class="metric-value yellow">Privada (ON)</div></div><div class="metric"><div class="metric-label">YPF EBITDA</div><div class="metric-value green">+28% YoY</div></div><div class="metric"><div class="metric-label">YPF Luz tipo</div><div class="metric-value teal">Reno + Gas</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> YPF (ver sección ARG) es la tesis principal. YPF Luz es la subsidiaria de generación eléctrica (renovables + gas) de YPF, que opera centrales eólicas, solares y termoeléctricas. Es privada y cotiza solo en deuda. Dentro del GAMS, la combinación de YPF + YPF Luz da exposición integrada a petróleo, gas y energía limpia.<br><br>YPF Luz se beneficia del nuevo marco WEM (Res. SE No. 400/25) que permite capturar el margen de despacho completo cuando usa gas de nueva infraestructura.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">YPF: demanda legal $16B; regulación. YPF Luz: privada, sin liquidez pública; riesgo tarifario.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">OLDELVAL</div><div class="company-name">Oleoductos del Valle S.A. · BYMA (deuda)</div></div><div class="badges"><span class="badge watch">MONITOREAR</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Infraestructura</span><span class="sector-tag">Oleoductos</span><span class="sector-tag">Neuquén→Mar del Plata</span></div><div class="metrics"><div class="metric"><div class="metric-label">Tipo</div><div class="metric-value">Infraestr.</div></div><div class="metric"><div class="metric-label">Ruta</div><div class="metric-value">Neuquén→MdP</div></div><div class="metric"><div class="metric-label">Relevancia</div><div class="metric-value green">Alta</div></div><div class="metric"><div class="metric-label">Acceso</div><div class="metric-value teal">Vía ONs</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Oldelval opera el sistema de oleoductos que transporta crudo desde la Cuenca Neuquina hasta los puertos del Atlántico (Luján de Cuyo y Mar del Plata). Es infraestructura crítica para evacuar la producción de Vaca Muerta. El crecimiento de la producción shale eleva la demanda de capacidad de transporte.<br><br>Su rol es comparable al de TGS en gas pero para petróleo. El RIGI y los planes de expansión de la infraestructura petrolera hacen que su capacidad se vuelva cuello de botella — y por tanto, su expansión es urgente y rentable. Dentro del GAMS accesible via obligaciones negociables.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Sin cotización pública de equity; riesgo tarifario regulado; dependencia del crecimiento de producción upstream; riesgo país.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">GEOPARK / GPRK</div><div class="company-name">GeoPark Limited · NYSE</div></div><div class="badges"><span class="badge watch">MONITOREAR</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Oil & Gas</span><span class="sector-tag">E&P</span><span class="sector-tag">Colombia/Vaca Muerta</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E</div><div class="metric-value green">~6x</div></div><div class="metric"><div class="metric-label">Producción Q1'26</div><div class="metric-value yellow">27,249 boepd</div></div><div class="metric"><div class="metric-label">vs Q1'25</div><div class="metric-value yellow">-5% YoY</div></div><div class="metric"><div class="metric-label">Acq. Frontera</div><div class="metric-value green">+40K boepd</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> GeoPark cotiza muy barato (~6x P/E) y está en plena transformación. En ene-2026 acordó adquirir los activos colombianos de Frontera Energy por $375M, lo que dobla su producción. También tiene entrada en Vaca Muerta (Loma Jarillosa Este). La oferta de adquisición de Parex a $9/acción fue rechazada y el precio subió 33% desde entonces.<br><br>El riesgo principal es la integración de Frontera + el ramp-up de Vaca Muerta + un precio del Brent que en FY25 promedió $68/bbl (vs $80 en 2024). La tesis es de re-rating por crecimiento de producción y escala.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Brent bajo $65; ejecución de integración Frontera; deuda para financiar adquisiciones; riesgo político Colombia; producción Q1'26 aún -5% YoY en Colombia.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">CRESUD / CRESY</div><div class="company-name">Cresud S.A.C.I.F. y A. · NASDAQ / BYMA</div></div><div class="badges"><span class="badge watch">MONITOREAR</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Agro</span><span class="sector-tag">Real Estate</span><span class="sector-tag">Holding</span></div><div class="metrics"><div class="metric"><div class="metric-label">Mkt Cap</div><div class="metric-value">~$902M</div></div><div class="metric"><div class="metric-label">Negocio agro</div><div class="metric-value">ARG/Brasil</div></div><div class="metric"><div class="metric-label">Negocio RE</div><div class="metric-value">Via IRSA</div></div><div class="metric"><div class="metric-label">Estructura</div><div class="metric-value yellow">Compleja</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Cresud es un holding con dos patas: agro (cultivos y ganadería en Argentina y Brasil) y real estate urbano (a través de IRSA, con shoppings y oficinas). Las finanzas consolidadas son complejas por la exposición a IRSA. El standalone muestra pérdidas operativas, aunque el Q2'26 mostró strong agricultural yields.<br><br>En el contexto del GAMS, Cresud representa exposición al agro argentino y al mercado inmobiliario local — diversificación sectorial dentro del fondo. A 4 años, el ciclo del agro y la normalización de Argentina son los catalizadores.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Financials consolidadas difíciles de analizar (IRSA); operaciones standalone con pérdidas; precio commodities agrícolas; macro Argentina; deuda del grupo.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">TELECOM / TEO</div><div class="company-name">Telecom Argentina S.A. · NYSE / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Telecom</span><span class="sector-tag">Fintech (Personal Pay)</span><span class="sector-tag">Argentina</span></div><div class="metrics"><div class="metric"><div class="metric-label">P/E</div><div class="metric-value green">~23x</div></div><div class="metric"><div class="metric-label">Rev. Q1'26</div><div class="metric-value green">+34% YoY USD</div></div><div class="metric"><div class="metric-label">EBITDA margin</div><div class="metric-value green">34.8%</div></div><div class="metric"><div class="metric-label">GF Score</div><div class="metric-value green">87/100</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> Telecom es el operador de telecomunicaciones más grande de Argentina (fija + móvil + internet). En Q1'26 reportó ingresos consolidados de $1.7B (+34% YoY en USD) con margen EBITDA del 34.8%. Firmó alianza con Banco Macro para expandir Personal Pay (digital wallet), vendiendo el 50% de Micro Sistemas por $75M.<br><br>Play dual: telecomunicaciones (infraestructura defensiva en recuperación real de tarifas) + fintech (Personal Pay + Banco Macro). Dividendos potenciales de hasta $300M autorizados.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Analistas tienen target Hold a $11.50; P/E negativo en métricas GAAP por FX; deuda en USD; concentración Argentina.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">MACRO / BMA</div><div class="company-name">Banco Macro S.A. · NYSE / BYMA</div></div><div class="badges"><span class="badge buy">COMPRA</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Banca</span><span class="sector-tag">Argentina</span><span class="sector-tag">Interior</span></div><div class="metrics"><div class="metric"><div class="metric-label">ADR precio</div><div class="metric-value">~$53</div></div><div class="metric"><div class="metric-label">Net income FY25</div><div class="metric-value green">ARS$290B+</div></div><div class="metric"><div class="metric-label">Dividendo</div><div class="metric-value green">Aprobado $147B</div></div><div class="metric"><div class="metric-label">Alianza</div><div class="metric-value green">Personal Pay</div></div></div><hr class="divider"><div class="analysis"><strong>Tesis:</strong> Banco Macro es uno de los bancos privados más sólidos de Argentina, con presencia fuerte en el interior del país. En 2026 aprobó dividendos por ARS$147B (3 cuotas mensuales) y firmó alianza con Telecom para expandir Personal Pay (invirtiendo $75M por el 50% de Micro Sistemas).<br><br>La recuperación del crédito en Argentina (actualmente muy bajo como % del PBI), la normalización del tipo de cambio y el crecimiento de los servicios digitales son los catalizadores del sector bancario argentino. Banco Macro está posicionado para beneficiarse de todos ellos.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Macro Argentina; riesgo crédito en ciclo de normalización; tasas reales; concentración en un solo mercado.</div></div></div>
+
+    <div class="card gams-card"><div class="card-header"><div><div class="ticker">SOBERANOS</div><div class="company-name">Bonos Soberanos Argentina (Categoría)</div></div><div class="badges"><span class="badge bond">BONO</span><span class="badge gams">GAMS</span></div></div><div class="tags"><span class="sector-tag">Soberano USD</span><span class="sector-tag">Hard Dollar</span><span class="sector-tag">AL30/GD30/AO27</span></div><div class="metrics"><div class="metric"><div class="metric-label">Tipo</div><div class="metric-value blue">Bonos USD</div></div><div class="metric"><div class="metric-label">Cupón referencia</div><div class="metric-value green">~6-8% TIR</div></div><div class="metric"><div class="metric-label">Rating ARG</div><div class="metric-value yellow">B / CCC+</div></div><div class="metric"><div class="metric-label">Riesgo</div><div class="metric-value yellow">Soberano</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis dentro del GAMS:</strong> Esta categoría incluye bonos soberanos argentinos en USD (posiblemente AL30, GD30, AO27 u otros de la curva hard-dollar). Funcionan como la pata de renta fija del fondo, aportando flujo de cupones en dólares y reduciendo la volatilidad del portafolio de acciones.<br><br>El contexto actual (gobierno Milei, acuerdo FMI, superávit fiscal) es más favorable que cualquier período reciente para el soberano argentino. S&P y Fitch han mejorado ratings durante 2026. Sin embargo, el riesgo de cola existe: cualquier desvío fiscal o político puede comprimir drásticamente el precio.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Default soberano (riesgo de cola); cambio de política económica post-Milei; volatilidad de spreads; riesgo de reestructuración.</div></div></div>
+  </div>
+</div>
+
+<!-- ===== BONOS ARG ===== -->
+<div id="bonos" class="section">
+  <div class="grid">
+    <div class="card"><div class="card-header"><div><div class="ticker">TZX27</div><div class="company-name">BONCER 30/06/2027 · Tesoro Nacional · Pesos</div></div><div class="badges"><span class="badge bond">BONO CER</span></div></div><div class="tags"><span class="sector-tag">Soberano ARS</span><span class="sector-tag">Ajuste CER</span><span class="sector-tag">Vto. Jun 2027</span></div><div class="metrics"><div class="metric"><div class="metric-label">Moneda</div><div class="metric-value blue">Pesos (CER)</div></div><div class="metric"><div class="metric-label">Spread CER</div><div class="metric-value yellow">CER +2/4%</div></div><div class="metric"><div class="metric-label">Vencimiento</div><div class="metric-value">30/06/2027</div></div><div class="metric"><div class="metric-label">Horizonte real</div><div class="metric-value red">~12 meses</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Bono del Tesoro ajustado por CER con vencimiento en junio 2027. La curva Boncer se comprimió significativamente: el tramo 2027 ofrece CER +2.1% a 4.0%. <br><br><strong>vs horizonte 4 años:</strong> Vence en ~12 meses desde hoy — no es un instrumento de 4 años. Funciona como cobertura de inflación en pesos a corto plazo. Si la inflación desacelera (2-3% mensual), los rendimientos reales son menores que alternativas USD.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Inflación baja → menor retorno. Default soberano en pesos. FX: si el peso se deprecia más rápido que la inflación, el retorno en USD es negativo.</div></div></div>
+
+    <div class="card"><div class="card-header"><div><div class="ticker">AO27</div><div class="company-name">Bonar 2027 · Tesoro Nacional · USD</div></div><div class="badges"><span class="badge bond">BONO USD</span></div></div><div class="tags"><span class="sector-tag">Soberano USD</span><span class="sector-tag">Hard Dollar</span><span class="sector-tag">Vto. Oct 2027</span></div><div class="metrics"><div class="metric"><div class="metric-label">Moneda</div><div class="metric-value blue">USD</div></div><div class="metric"><div class="metric-label">Cupón anual</div><div class="metric-value green">6% TNA</div></div><div class="metric"><div class="metric-label">TIR emisión</div><div class="metric-value green">5.89%</div></div><div class="metric"><div class="metric-label">Horizonte real</div><div class="metric-value red">~16 meses</div></div></div><hr class="divider"><div class="analysis"><strong>Análisis:</strong> Bonar 2027 emitido en feb-2026 con demanda 5.8x. Cupón 6% TNA con pagos mensuales, estructura bullet. TIR efectiva vía CCL ~8%. Modified Duration baja (1.58). Vence antes de las elecciones 2027, reduciendo incertidumbre política relativa.<br><br><strong>vs horizonte 4 años:</strong> Vence en ~16 meses — es un instrumento de corto plazo, ideal para el tramo de liquidez en USD del portafolio. Al vencimiento, los fondos deberán reinvertirse.</div><div class="risks"><div class="risk-label">⚡ Riesgos</div><div class="risk-text">Riesgo soberano Argentina. Está "levemente caro" vs curva secundaria. En escenario de default, instrumentos USD son los primeros afectados.</div></div></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div style="font-weight:700; font-size:15px; margin-bottom:12px; color:#fff">📌 Nota: Bonos ARG y el horizonte de 4 años</div>
+    <div class="analysis" style="font-size:13px; line-height:1.8;">
+      Ambos bonos (TZX27 y AO27) vencen en <strong>2027</strong> — dentro de 12-16 meses, no en 4 años. Funcionan como instrumentos de corto plazo:<br><br>
+      • <strong>AO27:</strong> Colchón en USD al 6% anual con pagos mensuales. Reinvertir al vencimiento en soberanos de mayor duration (GD30/AL35) o corporativos si el spread soberano sigue comprimiéndose.<br>
+      • <strong>TZX27:</strong> Cobertura inflación en pesos para posiciones en ARS. Evaluar rotar a TZX28 (CER +6.4% según datos de feb-2026) para mayor rendimiento real con más duration.<br><br>
+      Para 4 años en renta fija argentina en USD: <strong>GD30, GD35, GD41</strong> (bonos Globales) o corporativos como ONs de Pampa, TGS, YPF Luz — con yields del 7-10% y duration acorde al horizonte.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Descargo de responsabilidad:</strong> Este análisis es educativo e informativo. No constituye asesoramiento financiero ni recomendación de compra/venta. Los datos de P/E, precios y estimaciones son aproximaciones basadas en información pública al mes de junio 2026 y pueden haber variado. Consultá con un asesor financiero registrado antes de invertir. Los activos marcados GAMS corresponden al FCI indicado por el usuario.
+</footer>
+
+<script>
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+const originalOrder = [];
+let tagSortState  = 0; // 0=off 1=GAMS↑ 2=Cartera↑ 3=Both↑
+let pesoSortState = 0; // 0=off 1=desc 2=asc
+
+function getRows() {
+  return document.querySelector('.summary-table tbody');
+}
+
+function captureOriginal() {
+  if (originalOrder.length === 0)
+    Array.from(getRows().rows).forEach(r => originalOrder.push(r));
+}
+
+function resetArrow(id) {
+  const el = document.getElementById(id);
+  el.querySelector('.sort-arrow').textContent = '▲';
+  el.querySelector('.sort-arrow').style.opacity = '0.4';
+  el.classList.remove('sort-asc','sort-desc');
+}
+
+function setArrow(id, text, cls) {
+  const el = document.getElementById(id);
+  const arr = el.querySelector('.sort-arrow');
+  arr.textContent = text;
+  arr.style.opacity = '1';
+  el.classList.remove('sort-asc','sort-desc');
+  el.classList.add(cls);
+}
+
+function tagWeight(row) {
+  const b = row.querySelector('td:nth-child(5) .badge');
+  if (!b) return 0;
+  if (b.classList.contains('both'))    return 3;
+  if (b.classList.contains('gams'))    return 2;
+  if (b.classList.contains('cartera')) return 1;
+  return 0;
+}
+
+function sortByTag() {
+  captureOriginal();
+  pesoSortState = 0; resetArrow('th-peso');
+  tagSortState = (tagSortState + 1) % 4;
+  const tbody = getRows();
+
+  if (tagSortState === 0) {
+    resetArrow('th-tags');
+    originalOrder.forEach(r => tbody.appendChild(r));
+    return;
+  }
+
+  const labels = ['', 'GAMS ↑', 'Cartera ↑', 'Ambos ↑'];
+  setArrow('th-tags', labels[tagSortState], 'sort-asc');
+
+  Array.from(tbody.rows).sort((a, b) => {
+    const wa = tagWeight(a), wb = tagWeight(b);
+    if (tagSortState === 1) return wb - wa;                            // GAMS(2)+Both(3) first
+    if (tagSortState === 2) return (wb===1?-1:wa===1?1:0)||(wb-wa);   // Cartera(1) first
+    if (tagSortState === 3) return (wb===3?-1:wa===3?1:0)||(wb-wa);   // Both(3) first
+    return 0;
+  }).forEach(r => tbody.appendChild(r));
+}
+
+function sortByPeso() {
+  captureOriginal();
+  tagSortState = 0; resetArrow('th-tags');
+  pesoSortState = (pesoSortState + 1) % 3;
+  const tbody = getRows();
+
+  if (pesoSortState === 0) {
+    resetArrow('th-peso');
+    originalOrder.forEach(r => tbody.appendChild(r));
+    return;
+  }
+
+  const desc = pesoSortState === 1;
+  setArrow('th-peso', desc ? '▼' : '▲', desc ? 'sort-desc' : 'sort-asc');
+
+  Array.from(tbody.rows).sort((a, b) => {
+    const pa = parseFloat(a.querySelector('.peso-cell')?.dataset.peso || 0);
+    const pb = parseFloat(b.querySelector('.peso-cell')?.dataset.peso || 0);
+    return desc ? pb - pa : pa - pb;
+  }).forEach(r => tbody.appendChild(r));
+}
+</script>
+</body>
+</html>
