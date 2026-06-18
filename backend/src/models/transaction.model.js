@@ -12,7 +12,7 @@ const transactionSchema = new mongoose.Schema(
     ticker: { type: String, required: true, uppercase: true, trim: true },
     tipo_activo: {
       type: String,
-      enum: ['CEDEAR', 'ACCION', 'BONO', 'FCI', 'CRYPTO', 'OTRO'],
+      enum: ['CEDEAR', 'ACCION', 'ADR', 'BONO', 'ON', 'FCI', 'CRYPTO', 'OTRO'],
       required: true,
     },
     precio: { type: Number, required: true },
