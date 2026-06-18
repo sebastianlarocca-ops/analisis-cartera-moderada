@@ -1,0 +1,33 @@
+name: Actualizar precios de mercado
+
+on:
+  schedule:
+    # Cada 30 min entre 13:00 y 20:00 UTC (10:00-17:00 ART), lunes a viernes
+    - cron: '0,30 13-20 * * 1-5'
+  workflow_dispatch: # Permite ejecutar manualmente desde GitHub
+
+jobs:
+  fetch-prices:
+    name: Fetch y push precios
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias del script
+        run: npm install axios
+        working-directory: scripts
+
+      - name: Ejecutar fetch-prices
+        env:
+          RAILWAY_URL: ${{ secrets.RAILWAY_URL }}
+          PRICES_PUSH_SECRET: ${{ secrets.PRICES_PUSH_SECRET }}
+        run: node fetch-prices.js
+        working-directory: scripts

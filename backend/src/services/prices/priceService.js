@@ -1,5 +1,4 @@
-const yahooAdapter = require('./adapters/yahooAdapter');
-const bymaAdapter = require('./adapters/bymaAdapter');
+const twelveDataAdapter = require('./adapters/twelveDataAdapter');
 const cafciAdapter = require('./adapters/cafciAdapter');
 const bcraAdapter = require('./adapters/bcraAdapter');
 const Price = require('../../models/price.model');
@@ -7,10 +6,9 @@ const PriceHistory = require('../../models/priceHistory.model');
 const Portfolio = require('../../models/portfolio.model');
 
 // Devuelve el adapter correcto según tipo_activo
-// Yahoo (HTTP directo con headers de browser) cubre todo excepto FCIs
 const getAdapter = (tipo_activo) => {
   if (tipo_activo === 'FCI') return cafciAdapter;
-  return yahooAdapter; // ACCION, CEDEAR, ADR, BONO, ON
+  return twelveDataAdapter; // ACCION, CEDEAR, ADR, BONO, ON
 };
 
 // Obtiene todos los tickers únicos de portfolios activos con posiciones abiertas
@@ -89,4 +87,4 @@ const updateAllPrices = async () => {
   return { updated: updated.length, errors, tipo_cambio: tipoCambio };
 };
 
-module.exports = { updateAllPrices, getActiveTickers };
+module.exports = { updateAllPrices, getActiveTickers, persistPrice };
