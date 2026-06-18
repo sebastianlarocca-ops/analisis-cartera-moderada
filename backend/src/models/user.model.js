@@ -13,10 +13,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+userSchema.pre('save', async function () {
+  if (this.isModified('password')) this.password = await bcrypt.hash(this.password, 12);
 });
 
 userSchema.methods.verifyPassword = function (plain) {
