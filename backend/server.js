@@ -15,7 +15,7 @@ const portfoliosRouter = require('./src/routes/portfolios.routes');
 const transactionsRouter = require('./src/routes/transactions.routes');
 const pricesRouter = require('./src/routes/prices.routes');
 
-const { updateAllPrices } = require('./src/services/prices/priceService');
+const { updateAllPrices, getActiveTickers, persistPrice } = require('./src/services/prices/priceService');
 
 const app = express();
 
@@ -46,6 +46,28 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Auth — público
 app.use('/api/auth', authRouter);
+
+// Pipeline GitHub Actions — sin JWT, auth propia por PRICES_PUSH_SECRET
+app.get('/api/prices/tickers', async (req, res, next) => {
+  try {
+    const tickers = await getActiveTickers();
+    res.json({ success: true, data: tickers });
+  } catch (e) { next(e); }
+});
+
+app.post('/api/prices/push', async (req, res, next) => {
+  try {
+    const secret = (req.headers.authorization || '').replace('Bearer ', '');
+    if (!process.env.PRICES_PUSH_SECRET || secret !== process.env.PRICES_PUSH_SECRET)
+      return res.status(401).json({ success: false, message: 'No autorizado' });
+    const precios = req.body;
+    if (!Array.isArray(precios) || !precios.length)
+      return res.status(400).json({ success: false, message: 'Array de precios requerido' });
+    const results = await Promise.allSettled(precios.map((p) => persistPrice(p)));
+    const ok = results.filter((r) => r.status === 'fulfilled').length;
+    res.json({ success: true, ok, total: precios.length });
+  } catch (e) { next(e); }
+});
 
 // Rutas protegidas — requieren JWT de asesor
 app.use('/api/clients', auth, authorize('asesor'), clientsRouter);
