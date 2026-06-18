@@ -60,12 +60,13 @@ app.post('/api/prices/push', async (req, res, next) => {
     const secret = (req.headers.authorization || '').replace('Bearer ', '');
     if (!process.env.PRICES_PUSH_SECRET || secret !== process.env.PRICES_PUSH_SECRET)
       return res.status(401).json({ success: false, message: 'No autorizado' });
-    const precios = req.body;
+    // Acepta tanto array directo como { prices: [...] }
+    const precios = Array.isArray(req.body) ? req.body : req.body?.prices;
     if (!Array.isArray(precios) || !precios.length)
       return res.status(400).json({ success: false, message: 'Array de precios requerido' });
     const results = await Promise.allSettled(precios.map((p) => persistPrice(p)));
-    const ok = results.filter((r) => r.status === 'fulfilled').length;
-    res.json({ success: true, ok, total: precios.length });
+    const errors = results.filter((r) => r.status === 'rejected').map((r) => r.reason?.message);
+    res.json({ success: true, updated: results.filter((r) => r.status === 'fulfilled').length, total: precios.length, errors });
   } catch (e) { next(e); }
 });
 

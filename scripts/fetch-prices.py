@@ -103,8 +103,10 @@ def main():
         print(f"Errores al guardar: {result['errors']}")
 
     if errors:
-        print(f'Errores al fetchear: {errors}')
-        sys.exit(1)
+        print(f'Errores al fetchear ({len(errors)}): {[e["ticker"] for e in errors]}')
+        # Solo fallar si NO se pudo pushear ningún precio
+        if result.get('updated', 0) == 0:
+            sys.exit(1)
 
 if __name__ == '__main__':
     main()
