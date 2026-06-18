@@ -26,34 +26,31 @@ const buildYahooSymbol = (ticker, tipo_activo) =>
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 // Obtiene cookie + crumb necesarios para llamar a la API de Yahoo Finance
 const getYahooCrumb = async () => {
-  // Paso 1: obtener cookies
-  const cookieRes = await axios.get('https://fc.yahoo.com', {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      Accept: '*/*',
-    },
-    timeout: 10000,
+  // Paso 1: visitar finance.yahoo.com para obtener cookies de sesión
+  const homeRes = await axios.get('https://finance.yahoo.com/', {
+    headers: { 'User-Agent': UA, Accept: 'text/html' },
+    timeout: 15000,
     maxRedirects: 5,
   });
 
-  const setCookie = cookieRes.headers['set-cookie'] || [];
+  const setCookie = homeRes.headers['set-cookie'] || [];
   const cookie = setCookie.map((c) => c.split(';')[0]).join('; ');
 
-  // Paso 2: obtener crumb usando la cookie
+  if (!cookie) throw new Error('Yahoo no devolvió cookies de sesión');
+
+  // Paso 2: obtener crumb con esas cookies
   const crumbRes = await axios.get('https://query1.finance.yahoo.com/v1/test/getcrumb', {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      Accept: '*/*',
-      Cookie: cookie,
-    },
+    headers: { 'User-Agent': UA, Accept: '*/*', Cookie: cookie },
     timeout: 10000,
   });
 
   const crumb = crumbRes.data;
-  if (!crumb || typeof crumb !== 'string' || crumb.includes('<')) {
-    throw new Error('No se pudo obtener crumb de Yahoo');
+  if (!crumb || typeof crumb !== 'string' || crumb.includes('<') || crumb.length > 20) {
+    throw new Error(`Crumb inválido: ${JSON.stringify(crumb).slice(0, 100)}`);
   }
 
   console.log('  Yahoo crumb obtenido.');
