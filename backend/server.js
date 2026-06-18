@@ -21,8 +21,24 @@ const app = express();
 
 connectDB();
 
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://localhost:5176',
+  'https://analisis-cartera-moderada-7mqh-sebastianlarocca-4081s-projects.vercel.app',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: (origin, cb) => {
+    // Permitir requests sin origin (curl, Postman, Railway health check)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS bloqueado: ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 
