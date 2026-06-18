@@ -1,19 +1,20 @@
 import { X } from 'lucide-react'
-import { cn } from '../../lib/utils'
 
-export default function Modal({ open, onClose, title, children, className }) {
+export default function Modal({ open, onClose, title, children, className = '' }) {
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className={cn('relative bg-white rounded-xl shadow-xl w-full max-w-md', className)}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="text-base font-semibold text-slate-800">{title}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
-            <X size={18} />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div className={`glass ${className}`} style={{ position: 'relative', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0' }}>{title}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#717c91', padding: 2, lineHeight: 1, transition: 'color .18s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#e2e8f0'}
+            onMouseLeave={e => e.currentTarget.style.color = '#717c91'}>
+            <X size={17} />
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
+        <div style={{ padding: '18px 20px 20px' }}>{children}</div>
       </div>
     </div>
   )

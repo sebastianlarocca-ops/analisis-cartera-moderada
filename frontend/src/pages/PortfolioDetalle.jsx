@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Plus, TrendingUp, TrendingDown } from 'lucide-react'
+import { ArrowLeft, Plus, ArrowUp, ArrowDown } from 'lucide-react'
 import api from '../api/client'
-import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import Modal from '../components/ui/Modal'
 import Input from '../components/ui/Input'
@@ -12,7 +11,8 @@ const TIPOS_ACTIVO = ['ACCION', 'CEDEAR', 'ADR', 'BONO', 'ON', 'FCI', 'CRYPTO', 
 
 const emptyTx = {
   tipo: 'COMPRA', ticker: '', tipo_activo: 'ACCION',
-  precio: '', cantidad: '', comision: '', moneda: 'ARS', fecha: new Date().toISOString().split('T')[0], notas: '',
+  precio: '', cantidad: '', comision: '', moneda: 'ARS',
+  fecha: new Date().toISOString().split('T')[0], notas: '',
 }
 
 export default function PortfolioDetalle() {
@@ -35,36 +35,21 @@ export default function PortfolioDetalle() {
     ])
     setPortfolio(p.data.data)
     setTransactions(tx.data.data)
-    const pm = {}
-    pr.data.data.forEach((p) => { pm[p.ticker] = p })
-    setPrices(pm)
+    const pm = {}; pr.data.data.forEach((p) => { pm[p.ticker] = p }); setPrices(pm)
     setLoading(false)
   }
-
   useEffect(() => { load() }, [id])
 
   const handleTx = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setError('')
+    e.preventDefault(); setSaving(true); setError('')
     try {
-      const body = {
-        ...form,
-        portfolio_id: id,
-        client_id: portfolio.client_id,
-        precio: Number(form.precio),
-        cantidad: Number(form.cantidad),
-        comision: Number(form.comision || 0),
-      }
-      await api.post('/transactions', body)
-      setModal(false)
-      setForm(emptyTx)
-      load()
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error al registrar operación')
-    } finally {
-      setSaving(false)
-    }
+      await api.post('/transactions', {
+        ...form, portfolio_id: id, client_id: portfolio.client_id,
+        precio: Number(form.precio), cantidad: Number(form.cantidad), comision: Number(form.comision || 0),
+      })
+      setModal(false); setForm(emptyTx); load()
+    } catch (err) { setError(err.response?.data?.message || 'Error al registrar operación') }
+    finally { setSaving(false) }
   }
 
   const calcPnL = (pos) => {
@@ -75,169 +60,152 @@ export default function PortfolioDetalle() {
     return { diff, pct, precio_actual: p.precio }
   }
 
-  if (loading) return <div className="p-8 text-slate-500 text-sm">Cargando...</div>
-  if (!portfolio) return <div className="p-8 text-slate-500 text-sm">Portfolio no encontrado</div>
+  if (loading) return <div style={{ padding: 32, color: '#717c91', fontSize: 13 }}>Cargando...</div>
+  if (!portfolio) return <div style={{ padding: 32, color: '#717c91', fontSize: 13 }}>Portfolio no encontrado</div>
 
   const positions = portfolio.positions ?? []
 
   return (
-    <div className="p-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-6 transition-colors"
-      >
-        <ArrowLeft size={15} /> Volver
+    <div style={{ padding: 32 }}>
+      <button className="back-link" onClick={() => navigate(-1)} style={{ marginBottom: 24 }}>
+        <ArrowLeft size={14} /> Volver
       </button>
 
-      <div className="flex items-start justify-between mb-6">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{portfolio.nombre}</h1>
-          {portfolio.descripcion && <p className="text-sm text-slate-500 mt-0.5">{portfolio.descripcion}</p>}
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#e2e8f0', letterSpacing: '-0.02em' }}>{portfolio.nombre}</h1>
+          {portfolio.descripcion && <p style={{ fontSize: 12.5, color: '#8b94a8', marginTop: 3 }}>{portfolio.descripcion}</p>}
         </div>
-        <Button size="sm" onClick={() => setModal(true)}>
-          <Plus size={14} /> Nueva operación
-        </Button>
+        <button className="btn-primary" style={{ padding: '7px 14px', fontSize: 12 }} onClick={() => setModal(true)}>
+          <Plus size={13} /> Nueva operación
+        </button>
       </div>
 
       {/* Posiciones */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm mb-6">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Posiciones actuales</h2>
+      <div className="dark-tbl-wrap" style={{ marginBottom: 24 }}>
+        <div className="section-hdr">
+          <span className="section-hdr-title">Posiciones actuales</span>
+          <span style={{ fontSize: 11, color: '#717c91' }}>{positions.length} activos</span>
         </div>
         {positions.length === 0 ? (
-          <div className="px-6 py-8 text-center text-slate-400 text-sm">Sin posiciones abiertas</div>
+          <div className="empty-state">Sin posiciones abiertas</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  {['Ticker', 'Tipo', 'Cantidad', 'Precio promedio', 'Precio actual', 'P&L $', 'P&L %'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {positions.map((pos) => {
-                  const pnl = calcPnL(pos)
-                  const fmt = pos.moneda === 'USD' ? fmtUSD : fmtARS
-                  return (
-                    <tr key={pos.ticker} className="hover:bg-slate-50">
-                      <td className="pl-6 pr-4 py-3 font-semibold text-slate-800">{pos.ticker}</td>
-                      <td className="px-4 py-3">
-                        <Badge>{pos.tipo_activo}</Badge>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-slate-700">{pos.cantidad_actual.toLocaleString('es-AR')}</td>
-                      <td className="px-4 py-3 font-mono text-slate-600">{fmt(pos.precio_promedio_compra)}</td>
-                      <td className="px-4 py-3 font-mono text-slate-700">
-                        {pnl ? fmt(pnl.precio_actual) : <span className="text-slate-300">—</span>}
-                      </td>
-                      <td className={`px-4 py-3 font-mono font-medium ${pnl ? (pnl.diff >= 0 ? 'text-emerald-600' : 'text-red-500') : 'text-slate-300'}`}>
-                        {pnl ? fmt(pnl.diff) : '—'}
-                      </td>
-                      <td className={`pr-6 pl-4 py-3 font-medium flex items-center gap-1 ${pnl ? (pnl.pct >= 0 ? 'text-emerald-600' : 'text-red-500') : 'text-slate-300'}`}>
-                        {pnl ? (
-                          <>
-                            {pnl.pct >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-                            {fmtPct(pnl.pct)}
-                          </>
-                        ) : '—'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <table className="dark-tbl">
+            <thead>
+              <tr>
+                <th>Ticker</th><th>Tipo</th><th>Cantidad</th>
+                <th>Precio promedio</th><th>Precio actual</th>
+                <th>P&amp;L $</th><th>P&amp;L %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {positions.map((pos) => {
+                const pnl = calcPnL(pos)
+                const fmt = pos.moneda === 'USD' ? fmtUSD : fmtARS
+                const gain = pnl && pnl.diff >= 0
+                return (
+                  <tr key={pos.ticker}>
+                    <td style={{ fontFamily: 'var(--mono)', fontWeight: 700, color: '#c7d0e0', letterSpacing: '0.04em' }}>{pos.ticker}</td>
+                    <td><Badge>{pos.tipo_activo}</Badge></td>
+                    <td className="mono" style={{ color: '#e2e8f0' }}>{pos.cantidad_actual.toLocaleString('es-AR')}</td>
+                    <td className="mono" style={{ color: '#8b94a8' }}>{fmt(pos.precio_promedio_compra)}</td>
+                    <td className="mono" style={{ color: '#e2e8f0' }}>{pnl ? fmt(pnl.precio_actual) : <span style={{ color: '#4a5568' }}>—</span>}</td>
+                    <td className="mono" style={{ fontWeight: 600, color: pnl ? (gain ? '#34d399' : '#f87171') : '#4a5568' }}>
+                      {pnl ? fmt(pnl.diff) : '—'}
+                    </td>
+                    <td>
+                      {pnl ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'var(--mono)', fontWeight: 600, fontSize: 12.5, color: gain ? '#34d399' : '#f87171' }}>
+                          {gain ? <ArrowUp size={11} /> : <ArrowDown size={11} />}
+                          {fmtPct(pnl.pct)}
+                        </span>
+                      ) : <span style={{ color: '#4a5568' }}>—</span>}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
-      {/* Historial de transacciones */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-        <div className="px-6 py-4 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Historial de operaciones</h2>
+      {/* Historial */}
+      <div className="dark-tbl-wrap">
+        <div className="section-hdr">
+          <span className="section-hdr-title">Historial de operaciones</span>
+          <span style={{ fontSize: 11, color: '#717c91' }}>{transactions.length} operaciones</span>
         </div>
         {transactions.length === 0 ? (
-          <div className="px-6 py-8 text-center text-slate-400 text-sm">Sin operaciones registradas</div>
+          <div className="empty-state">Sin operaciones registradas</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  {['Fecha', 'Tipo', 'Ticker', 'Cantidad', 'Precio', 'Total', 'Notas'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {transactions.map((tx) => {
-                  const fmt = tx.moneda === 'USD' ? fmtUSD : fmtARS
-                  return (
-                    <tr key={tx._id} className="hover:bg-slate-50">
-                      <td className="pl-6 pr-4 py-3 text-slate-500 whitespace-nowrap">{fmtFecha(tx.fecha)}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={tx.tipo === 'COMPRA' ? 'green' : 'red'}>{tx.tipo}</Badge>
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-slate-800">{tx.ticker}</td>
-                      <td className="px-4 py-3 font-mono text-slate-700">{tx.cantidad.toLocaleString('es-AR')}</td>
-                      <td className="px-4 py-3 font-mono text-slate-600">{fmt(tx.precio)}</td>
-                      <td className="px-4 py-3 font-mono font-medium text-slate-800">{fmt(tx.precio * tx.cantidad)}</td>
-                      <td className="pr-6 pl-4 py-3 text-slate-400 text-xs">{tx.notas || '—'}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <table className="dark-tbl">
+            <thead>
+              <tr>
+                <th>Fecha</th><th>Tipo</th><th>Ticker</th>
+                <th>Cantidad</th><th>Precio</th><th>Total</th><th>Notas</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((tx) => {
+                const fmt = tx.moneda === 'USD' ? fmtUSD : fmtARS
+                return (
+                  <tr key={tx._id}>
+                    <td style={{ color: '#8b94a8', fontSize: 12, whiteSpace: 'nowrap' }}>{fmtFecha(tx.fecha)}</td>
+                    <td><Badge variant={tx.tipo === 'COMPRA' ? 'green' : tx.tipo === 'VENTA' ? 'red' : 'blue'}>{tx.tipo}</Badge></td>
+                    <td style={{ fontFamily: 'var(--mono)', fontWeight: 700, color: '#c7d0e0' }}>{tx.ticker}</td>
+                    <td className="mono" style={{ color: '#e2e8f0' }}>{tx.cantidad.toLocaleString('es-AR')}</td>
+                    <td className="mono" style={{ color: '#8b94a8' }}>{fmt(tx.precio)}</td>
+                    <td className="mono" style={{ fontWeight: 600, color: '#e2e8f0' }}>{fmt(tx.precio * tx.cantidad)}</td>
+                    <td style={{ color: '#717c91', fontSize: 12 }}>{tx.notas || '—'}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
       {/* Modal nueva operación */}
       <Modal open={modal} onClose={() => { setModal(false); setForm(emptyTx); setError('') }} title="Nueva operación" className="max-w-lg">
-        <form onSubmit={handleTx} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Tipo</label>
-              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>COMPRA</option>
-                <option>VENTA</option>
-                <option>DIVIDENDO</option>
+        <form onSubmit={handleTx} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div>
+              <label className="dark-label">Tipo</label>
+              <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="dark-select">
+                <option>COMPRA</option><option>VENTA</option><option>DIVIDENDO</option>
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Tipo de activo</label>
-              <select value={form.tipo_activo} onChange={(e) => setForm({ ...form, tipo_activo: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div>
+              <label className="dark-label">Tipo de activo</label>
+              <select value={form.tipo_activo} onChange={(e) => setForm({ ...form, tipo_activo: e.target.value })} className="dark-select">
                 {TIPOS_ACTIVO.map((t) => <option key={t}>{t}</option>)}
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <Input label="Ticker *" value={form.ticker} onChange={(e) => setForm({ ...form, ticker: e.target.value.toUpperCase() })} placeholder="Ej: GGAL" required />
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Moneda</label>
-              <select value={form.moneda} onChange={(e) => setForm({ ...form, moneda: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>ARS</option>
-                <option>USD</option>
+            <div>
+              <label className="dark-label">Moneda</label>
+              <select value={form.moneda} onChange={(e) => setForm({ ...form, moneda: e.target.value })} className="dark-select">
+                <option>ARS</option><option>USD</option>
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
             <Input label="Precio *" type="number" step="0.0001" value={form.precio} onChange={(e) => setForm({ ...form, precio: e.target.value })} required />
             <Input label="Cantidad *" type="number" step="0.0001" value={form.cantidad} onChange={(e) => setForm({ ...form, cantidad: e.target.value })} required />
             <Input label="Comisión" type="number" step="0.01" value={form.comision} onChange={(e) => setForm({ ...form, comision: e.target.value })} />
           </div>
           <Input label="Fecha" type="date" value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} />
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-700">Notas</label>
-            <textarea value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} rows={2}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+          <div>
+            <label className="dark-label">Notas</label>
+            <textarea value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} rows={2} className="dark-textarea" />
           </div>
-          {error && <p className="text-red-600 text-xs">{error}</p>}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" type="button" onClick={() => setModal(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Registrar'}</Button>
+          {error && <p style={{ fontSize: 12, color: '#f87171' }}>{error}</p>}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 4 }}>
+            <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
+            <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Guardando...' : 'Registrar'}</button>
           </div>
         </form>
       </Modal>

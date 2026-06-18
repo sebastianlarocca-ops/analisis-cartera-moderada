@@ -3,12 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, ChevronRight, Search } from 'lucide-react'
 import api from '../api/client'
 import Modal from '../components/ui/Modal'
-import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Badge from '../components/ui/Badge'
 
-const perfilColor = { conservador: 'blue', moderado: 'yellow', agresivo: 'red' }
-
+const perfilVariant = { conservador: 'blue', moderado: 'yellow', agresivo: 'red' }
 const emptyForm = { nombre: '', apellido: '', email: '', telefono: '', perfil_riesgo: 'moderado', notas: '' }
 
 export default function Clientes() {
@@ -21,25 +19,18 @@ export default function Clientes() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const load = () =>
-    api.get('/clients').then((r) => setClientes(r.data.data)).finally(() => setLoading(false))
-
+  const load = () => api.get('/clients').then((r) => setClientes(r.data.data)).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
-    setError('')
+    setSaving(true); setError('')
     try {
       await api.post('/clients', form)
-      setModal(false)
-      setForm(emptyForm)
-      load()
+      setModal(false); setForm(emptyForm); load()
     } catch (err) {
       setError(err.response?.data?.message || 'Error al crear cliente')
-    } finally {
-      setSaving(false)
-    }
+    } finally { setSaving(false) }
   }
 
   const filtrados = clientes.filter((c) =>
@@ -47,63 +38,54 @@ export default function Clientes() {
   )
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div style={{ padding: 32 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Clientes</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{clientes.length} clientes activos</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#e2e8f0', letterSpacing: '-0.02em' }}>Clientes</h1>
+          <p style={{ fontSize: 12.5, color: '#8b94a8', marginTop: 3 }}>{clientes.length} clientes activos</p>
         </div>
-        <Button onClick={() => setModal(true)}>
-          <Plus size={16} /> Nuevo cliente
-        </Button>
+        <button className="btn-primary" onClick={() => setModal(true)}>
+          <Plus size={15} /> Nuevo cliente
+        </button>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-        <div className="px-6 py-3 border-b border-slate-100">
-          <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className="dark-tbl-wrap">
+        {/* Search */}
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#717c91' }} />
             <input
               value={filtro}
               onChange={(e) => setFiltro(e.target.value)}
               placeholder="Buscar por nombre o email..."
-              className="w-full pl-9 pr-4 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="dark-input"
+              style={{ paddingLeft: 32 }}
             />
           </div>
         </div>
 
         {loading ? (
-          <div className="px-6 py-8 text-center text-slate-400 text-sm">Cargando...</div>
+          <div className="empty-state">Cargando...</div>
         ) : filtrados.length === 0 ? (
-          <div className="px-6 py-8 text-center text-slate-400 text-sm">
-            {filtro ? 'Sin resultados para esa búsqueda' : 'No hay clientes aún'}
-          </div>
+          <div className="empty-state">{filtro ? 'Sin resultados para esa búsqueda' : 'No hay clientes aún'}</div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="dark-tbl">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Cliente</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Email</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Perfil</th>
-                <th className="px-6 py-3" />
+              <tr>
+                <th>Cliente</th>
+                <th>Email</th>
+                <th>Perfil</th>
+                <th />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody>
               {filtrados.map((c) => (
-                <tr
-                  key={c._id}
-                  onClick={() => navigate(`/clientes/${c._id}`)}
-                  className="hover:bg-slate-50 cursor-pointer"
-                >
-                  <td className="px-6 py-3 font-medium text-slate-800">{c.nombre} {c.apellido}</td>
-                  <td className="px-6 py-3 text-slate-500">{c.email}</td>
-                  <td className="px-6 py-3">
-                    <Badge variant={perfilColor[c.perfil_riesgo]}>
-                      {c.perfil_riesgo}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-3 text-right">
-                    <ChevronRight size={16} className="text-slate-300 ml-auto" />
-                  </td>
+                <tr key={c._id} onClick={() => navigate(`/clientes/${c._id}`)} style={{ cursor: 'pointer' }}>
+                  <td style={{ fontWeight: 600, color: '#c7d0e0' }}>{c.nombre} {c.apellido}</td>
+                  <td style={{ color: '#8b94a8' }}>{c.email}</td>
+                  <td><Badge variant={perfilVariant[c.perfil_riesgo]}>{c.perfil_riesgo}</Badge></td>
+                  <td style={{ textAlign: 'right' }}><ChevronRight size={15} color="#4a5568" /></td>
                 </tr>
               ))}
             </tbody>
@@ -112,38 +94,29 @@ export default function Clientes() {
       </div>
 
       <Modal open={modal} onClose={() => { setModal(false); setForm(emptyForm); setError('') }} title="Nuevo cliente">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <Input label="Nombre *" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
             <Input label="Apellido *" value={form.apellido} onChange={(e) => setForm({ ...form, apellido: e.target.value })} required />
           </div>
           <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           <Input label="Teléfono" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-700">Perfil de riesgo</label>
-            <select
-              value={form.perfil_riesgo}
-              onChange={(e) => setForm({ ...form, perfil_riesgo: e.target.value })}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+          <div>
+            <label className="dark-label">Perfil de riesgo</label>
+            <select value={form.perfil_riesgo} onChange={(e) => setForm({ ...form, perfil_riesgo: e.target.value })} className="dark-select">
               <option value="conservador">Conservador</option>
               <option value="moderado">Moderado</option>
               <option value="agresivo">Agresivo</option>
             </select>
           </div>
-          <div className="space-y-1">
-            <label className="block text-xs font-medium text-slate-700">Notas</label>
-            <textarea
-              value={form.notas}
-              onChange={(e) => setForm({ ...form, notas: e.target.value })}
-              rows={2}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
+          <div>
+            <label className="dark-label">Notas</label>
+            <textarea value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} rows={2} className="dark-textarea" />
           </div>
-          {error && <p className="text-red-600 text-xs">{error}</p>}
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" type="button" onClick={() => setModal(false)}>Cancelar</Button>
-            <Button type="submit" disabled={saving}>{saving ? 'Guardando...' : 'Crear cliente'}</Button>
+          {error && <p style={{ fontSize: 12, color: '#f87171' }}>{error}</p>}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 4 }}>
+            <button type="button" className="btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
+            <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Guardando...' : 'Crear cliente'}</button>
           </div>
         </form>
       </Modal>

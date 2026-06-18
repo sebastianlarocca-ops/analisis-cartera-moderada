@@ -25,46 +25,57 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl mb-4">
-            <TrendingUp className="text-white" size={24} />
+    <div className="page-bg" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div className="noise" />
+      <div style={{ width: '100%', maxWidth: 360, position: 'relative', zIndex: 1 }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 52, height: 52, borderRadius: 14,
+            background: 'rgba(99,102,241,0.15)',
+            border: '1px solid rgba(99,102,241,0.3)',
+            boxShadow: '0 0 30px -4px rgba(99,102,241,0.5)',
+            marginBottom: 16,
+          }}>
+            <TrendingUp size={22} color="#818cf8" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Cartera Moderada</h1>
-          <p className="text-slate-500 text-sm mt-1">Panel del Asesor</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#e2e8f0', letterSpacing: '-0.02em', marginBottom: 4 }}>
+            Cartera Moderada
+          </h1>
+          <p style={{ fontSize: 13, color: '#8b94a8' }}>Panel del Asesor</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Email</label>
+        {/* Card */}
+        <div className="glass" style={{ padding: '28px 28px 24px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label className="dark-label">Email</label>
               <input
-                type="email"
-                required
+                type="email" required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="dark-input"
                 placeholder="tu@email.com"
               />
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-slate-700">Password</label>
+            <div>
+              <label className="dark-label">Contraseña</label>
               <input
-                type="password"
-                required
+                type="password" required
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="dark-input"
                 placeholder="••••••••"
               />
             </div>
-            {error && <p className="text-red-600 text-xs">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white rounded-md py-2 text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
+            {error && (
+              <p style={{ fontSize: 12, color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 6, padding: '6px 10px' }}>
+                {error}
+              </p>
+            )}
+            <button type="submit" disabled={loading} className="btn-primary" style={{ justifyContent: 'center', marginTop: 4, padding: '10px' }}>
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>

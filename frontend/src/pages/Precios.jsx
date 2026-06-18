@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, ArrowUp, ArrowDown } from 'lucide-react'
 import api from '../api/client'
-import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { fmtARS, fmtUSD, fmtPct } from '../lib/utils'
 
@@ -21,76 +20,74 @@ export default function Precios() {
 
   const handleUpdate = async () => {
     setUpdating(true)
-    try {
-      await api.post('/prices/update')
-      await load()
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setUpdating(false)
-    }
+    try { await api.post('/prices/update'); await load() }
+    catch (e) { console.error(e) }
+    finally { setUpdating(false) }
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div style={{ padding: 32 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Precios de mercado</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#e2e8f0', letterSpacing: '-0.02em' }}>Precios de mercado</h1>
           {updatedAt && (
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p style={{ fontSize: 11.5, color: '#8b94a8', marginTop: 3 }}>
               Última actualización: {new Date(updatedAt).toLocaleString('es-AR')}
             </p>
           )}
         </div>
-        <Button variant="outline" onClick={handleUpdate} disabled={updating}>
-          <RefreshCw size={14} className={updating ? 'animate-spin' : ''} />
+        <button className="btn-ghost" onClick={handleUpdate} disabled={updating}>
+          <RefreshCw size={13} style={{ animation: updating ? 'spin 1s linear infinite' : 'none' }} />
           {updating ? 'Actualizando...' : 'Actualizar ahora'}
-        </Button>
+        </button>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+      <div className="dark-tbl-wrap">
         {loading ? (
-          <div className="px-6 py-8 text-center text-slate-400 text-sm">Cargando...</div>
+          <div className="empty-state">Cargando precios...</div>
         ) : precios.length === 0 ? (
-          <div className="px-6 py-8 text-center text-slate-400 text-sm">
-            Sin precios. Ejecutá una actualización o esperá el cron automático.
-          </div>
+          <div className="empty-state">Sin precios. Ejecutá una actualización o esperá el cron automático.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  {['Ticker', 'Precio', 'Variación', 'Moneda', 'Fuente', 'Mercado'].map((h) => (
-                    <th key={h} className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {precios.map((p) => (
-                  <tr key={p.ticker} className="hover:bg-slate-50">
-                    <td className="pl-6 pr-5 py-3 font-bold text-slate-800">{p.ticker}</td>
-                    <td className="px-5 py-3 font-mono font-medium text-slate-800">
-                      {p.moneda === 'USD' ? fmtUSD(p.precio) : fmtARS(p.precio)}
-                    </td>
-                    <td className={`px-5 py-3 font-medium ${p.variacion_pct >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+          <table className="dark-tbl">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Precio</th>
+                <th>Variación</th>
+                <th>Moneda</th>
+                <th>Fuente</th>
+                <th>Mercado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {precios.map((p) => (
+                <tr key={p.ticker}>
+                  <td style={{ fontFamily: 'var(--mono)', fontWeight: 700, color: '#c7d0e0', letterSpacing: '0.04em' }}>{p.ticker}</td>
+                  <td className="mono" style={{ color: '#e2e8f0', fontWeight: 600 }}>
+                    {p.moneda === 'USD' ? fmtUSD(p.precio) : fmtARS(p.precio)}
+                  </td>
+                  <td>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      fontFamily: 'var(--mono)', fontWeight: 600, fontSize: 12.5,
+                      color: p.variacion_pct >= 0 ? '#34d399' : '#f87171',
+                    }}>
+                      {p.variacion_pct >= 0 ? <ArrowUp size={11} /> : <ArrowDown size={11} />}
                       {fmtPct(p.variacion_pct)}
-                    </td>
-                    <td className="px-5 py-3">
-                      <Badge variant={p.moneda === 'USD' ? 'green' : 'blue'}>{p.moneda}</Badge>
-                    </td>
-                    <td className="px-5 py-3 text-slate-500 capitalize">{p.fuente}</td>
-                    <td className="pr-6 pl-5 py-3">
-                      <Badge variant={p.mercado_abierto ? 'green' : 'default'}>
-                        {p.mercado_abierto ? 'Abierto' : 'Cerrado'}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </span>
+                  </td>
+                  <td><Badge variant={p.moneda === 'USD' ? 'teal' : 'blue'}>{p.moneda}</Badge></td>
+                  <td style={{ color: '#717c91', textTransform: 'capitalize', fontSize: 12 }}>{p.fuente}</td>
+                  <td><Badge variant={p.mercado_abierto ? 'green' : 'default'}>{p.mercado_abierto ? 'Abierto' : 'Cerrado'}</Badge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

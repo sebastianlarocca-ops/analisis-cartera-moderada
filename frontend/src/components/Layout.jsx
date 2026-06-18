@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, TrendingUp, DollarSign, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, DollarSign, TrendingUp, LogOut } from 'lucide-react'
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -12,56 +12,69 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div style={{ display: 'flex', height: '100vh', background: '#060810' }}>
+      <div className="noise" />
+
       {/* Sidebar */}
-      <aside className="w-60 bg-slate-900 flex flex-col shrink-0">
-        <div className="px-6 py-5 border-b border-slate-700">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="text-blue-400" size={20} />
-            <span className="text-white font-semibold text-sm">Cartera Moderada</span>
+      <aside style={{
+        width: 220, flexShrink: 0,
+        background: 'rgba(6,8,16,0.97)',
+        borderRight: '1px solid rgba(255,255,255,0.055)',
+        display: 'flex', flexDirection: 'column',
+        position: 'relative', zIndex: 10,
+      }}>
+        {/* Logo */}
+        <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.055)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 9,
+              background: 'rgba(99,102,241,0.14)',
+              border: '1px solid rgba(99,102,241,0.28)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 20px -4px rgba(99,102,241,0.4)',
+            }}>
+              <TrendingUp size={15} color="#818cf8" />
+            </div>
+            <div>
+              <div style={{ color: '#e2e8f0', fontWeight: 700, fontSize: 13, letterSpacing: '-0.01em', lineHeight: 1.3 }}>Cartera</div>
+              <div style={{ color: '#8b94a8', fontSize: 9.5, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Moderada</div>
+            </div>
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {nav.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/'}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                }`
-              }
+              className={({ isActive }) => isActive ? 'nav-active' : 'nav-item'}
             >
-              <Icon size={17} />
+              <Icon size={15} />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="px-4 py-4 border-t border-slate-700">
-          <div className="text-slate-400 text-xs mb-3 truncate">{user?.email}</div>
+        {/* Bottom */}
+        <div style={{ padding: '14px 16px', borderTop: '1px solid rgba(255,255,255,0.055)' }}>
+          <div style={{ color: '#8b94a8', fontSize: 11, marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {user?.email}
+          </div>
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors w-full"
+            className="back-link"
+            onClick={() => { logout(); navigate('/login') }}
           >
-            <LogOut size={16} />
+            <LogOut size={13} />
             Cerrar sesión
           </button>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
+      <main style={{ flex: 1, overflowY: 'auto', position: 'relative', zIndex: 10 }} className="page-bg">
         <Outlet />
       </main>
     </div>
