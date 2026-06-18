@@ -16,18 +16,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
+          python-version: '3.11'
 
-      - name: Instalar dependencias del script
-        run: npm install axios
-        working-directory: scripts
+      - name: Instalar dependencias
+        run: pip install yfinance requests
 
       - name: Ejecutar fetch-prices
         env:
           RAILWAY_URL: ${{ secrets.RAILWAY_URL }}
           PRICES_PUSH_SECRET: ${{ secrets.PRICES_PUSH_SECRET }}
-        run: node fetch-prices.js
-        working-directory: scripts
+        run: python scripts/fetch-prices.py
