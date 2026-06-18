@@ -7,10 +7,10 @@ const PriceHistory = require('../../models/priceHistory.model');
 const Portfolio = require('../../models/portfolio.model');
 
 // Devuelve el adapter correcto según tipo_activo
+// Yahoo (HTTP directo con headers de browser) cubre todo excepto FCIs
 const getAdapter = (tipo_activo) => {
   if (tipo_activo === 'FCI') return cafciAdapter;
-  if (tipo_activo === 'BONO') return bymaAdapter;
-  return yahooAdapter; // ACCION, CEDEAR, ADR, ON, OTRO
+  return yahooAdapter; // ACCION, CEDEAR, ADR, BONO, ON
 };
 
 // Obtiene todos los tickers únicos de portfolios activos con posiciones abiertas
@@ -61,19 +61,27 @@ const updateAllPrices = async () => {
 
   const tipoCambio = await bcraAdapter.fetchRates().catch(() => null);
 
-  const results = await Promise.allSettled(
-    tickers.map(async ({ ticker, tipo_activo }) => {
-      const adapter = getAdapter(tipo_activo);
-      const result = await adapter.fetchPrice(ticker, tipo_activo);
-      await persistPrice(result, tipoCambio);
-      return ticker;
-    })
-  );
+  // Procesamos de a uno con delay para no saturar las APIs externas
+  const results = [];
+  for (const { ticker, tipo_activo } of tickers) {
+    const result = await (async () => {
+      try {
+        const adapter = getAdapter(tipo_activo);
+        const data = await adapter.fetchPrice(ticker, tipo_activo);
+        await persistPrice(data, tipoCambio);
+        return { status: 'fulfilled', value: ticker };
+      } catch (err) {
+        return { status: 'rejected', reason: err, ticker };
+      }
+    })();
+    results.push(result);
+    await new Promise((r) => setTimeout(r, 300)); // 300ms entre tickers
+  }
 
   const updated = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
   const errors = results
     .filter((r) => r.status === 'rejected')
-    .map((r, i) => ({ ticker: tickers[i].ticker, error: r.reason?.message }));
+    .map((r) => ({ ticker: r.ticker, error: r.reason?.message }));
 
   console.log(`[prices] Actualizado: ${updated.length} tickers. Errores: ${errors.length}`);
   if (errors.length) console.error('[prices] Errores:', errors);
