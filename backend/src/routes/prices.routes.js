@@ -72,6 +72,20 @@ router.post('/push', async (req, res, next) => {
   }
 });
 
+// PUT /api/prices/:ticker — carga manual de precio (JWT asesor)
+router.put('/:ticker', async (req, res, next) => {
+  try {
+    const ticker = req.params.ticker.toUpperCase();
+    const { precio, moneda = 'ARS', variacion_pct = 0, fuente = 'manual' } = req.body;
+    if (!precio || isNaN(precio))
+      return res.status(400).json({ success: false, message: 'precio requerido' });
+    const { persistPrice } = require('../services/prices/priceService');
+    await persistPrice({ ticker, precio: Number(precio), moneda, variacion_pct: Number(variacion_pct), mercado_abierto: false, fuente });
+    const price = await require('../models/price.model').findOne({ ticker });
+    res.json({ success: true, data: price });
+  } catch (err) { next(err); }
+});
+
 // GET /api/prices/cafci/search?nombre=galileo — helper para encontrar IDs de fondos
 router.get('/cafci/search', async (req, res, next) => {
   try {
