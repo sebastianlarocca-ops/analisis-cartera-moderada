@@ -52,16 +52,23 @@ const persistPrice = async (result, tipoCambio) => {
   }
 };
 
-// Actualiza todos los precios activos — llamado por el endpoint y el cron
-const updateAllPrices = async () => {
+// Actualiza precios activos — llamado por el endpoint /update y el cron.
+// skipYahoo=true (default) porque Railway está bloqueado por Yahoo Finance;
+// los precios Yahoo vienen exclusivamente de GitHub Actions vía /api/prices/push.
+const updateAllPrices = async ({ skipYahoo = true } = {}) => {
   const tickers = await getActiveTickers();
   if (tickers.length === 0) return { updated: 0, errors: [] };
 
   const tipoCambio = await bcraAdapter.fetchRates().catch(() => null);
 
-  // Procesamos de a uno con delay para no saturar las APIs externas
+  const toFetch = skipYahoo
+    ? tickers.filter(({ tipo_activo }) => tipo_activo === 'FCI')
+    : tickers;
+
+  if (toFetch.length === 0) return { updated: 0, errors: [], tipo_cambio: tipoCambio };
+
   const results = [];
-  for (const { ticker, tipo_activo } of tickers) {
+  for (const { ticker, tipo_activo } of toFetch) {
     const result = await (async () => {
       try {
         const adapter = getAdapter(tipo_activo);
@@ -73,7 +80,7 @@ const updateAllPrices = async () => {
       }
     })();
     results.push(result);
-    await new Promise((r) => setTimeout(r, 300)); // 300ms entre tickers
+    await new Promise((r) => setTimeout(r, 300));
   }
 
   const updated = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
