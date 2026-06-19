@@ -24,6 +24,12 @@ if not RAILWAY_URL or not SECRET:
 
 TIPOS_LOCALES = {'ACCION', 'CEDEAR', 'BONO', 'ON'}
 
+# Mapa ticker interno → abreviación en la API de Galileo
+GALILEO_MAP = {
+    'GALMS':  'GAMS',
+    'GALMS2': 'GAMSY',
+}
+
 def build_symbol(ticker, tipo_activo):
     return f"{ticker}.BA" if tipo_activo in TIPOS_LOCALES else ticker
 
@@ -48,6 +54,47 @@ def fetch_price(ticker, tipo_activo):
         'fuente': 'yahoo',
     }
 
+def fetch_galileo_prices(fci_tickers):
+    """Fetches FCI cuotapartes from galileoargentina.com.ar"""
+    if not fci_tickers:
+        return []
+    try:
+        r = requests.get('https://www.galileoargentina.com.ar/api/fondos', timeout=10)
+        r.raise_for_status()
+        fondos = r.json().get('items', [])
+        fondos_by_abrev = {f['fields']['abreviacin']: f['fields'] for f in fondos if 'fields' in f}
+    except Exception as e:
+        print(f'  [error] Galileo API: {e}')
+        return []
+
+    results = []
+    for t in fci_tickers:
+        abrev = GALILEO_MAP.get(t['ticker'].upper())
+        if not abrev:
+            print(f"  [error] {t['ticker']}: no mapeado en GALILEO_MAP")
+            continue
+        fields = fondos_by_abrev.get(abrev)
+        if not fields:
+            print(f"  [error] {t['ticker']}: fondo '{abrev}' no encontrado en Galileo")
+            continue
+        try:
+            precio = float(fields['cuotaparte'])
+            anterior = float(fields.get('cuotaparteAnterior') or fields['cuotaparte'])
+            variacion = round((precio - anterior) / anterior * 100, 4) if anterior else 0
+            moneda = 'USD' if 'dolar' in fields.get('moneda', '').lower() else 'ARS'
+            results.append({
+                'ticker': t['ticker'],
+                'precio': precio,
+                'moneda': moneda,
+                'variacion_pct': variacion,
+                'mercado_abierto': False,
+                'fuente': 'galileo',
+            })
+            print(f"  [ok] {t['ticker']} (Galileo): {precio} {moneda}")
+        except Exception as e:
+            print(f"  [error] {t['ticker']}: {e}")
+    return results
+
 def main():
     # 1. Obtener tickers activos desde Railway
     print(f'Obteniendo tickers desde {RAILWAY_URL}/api/prices/tickers ...')
@@ -56,6 +103,7 @@ def main():
     tickers = r.json()['data']
 
     to_fetch = [t for t in tickers if t['tipo_activo'] != 'FCI']
+    fci_tickers = [t for t in tickers if t['tipo_activo'] == 'FCI']
 
     if not to_fetch:
         print('No hay tickers para fetchear. Saliendo.')
@@ -76,6 +124,12 @@ def main():
             errors.append({'ticker': t['ticker'], 'error': str(e)})
             print(f"  [error] {t['ticker']}: {e}")
         time.sleep(0.5)
+
+    # 2b. Fetchear FCI desde Galileo
+    if fci_tickers:
+        print(f"\nFetcheando {len(fci_tickers)} FCI desde Galileo...")
+        galileo_prices = fetch_galileo_prices(fci_tickers)
+        prices.extend(galileo_prices)
 
     if not prices:
         print('Ningún precio obtenido. Abortando push.')
