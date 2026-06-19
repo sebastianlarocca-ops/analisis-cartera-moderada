@@ -12,8 +12,12 @@ import os
 import sys
 import time
 import json
+import warnings
 import requests
+import urllib3
 import yfinance as yf
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 RAILWAY_URL = os.environ.get('RAILWAY_URL', '').rstrip('/').strip()
 SECRET = os.environ.get('PRICES_PUSH_SECRET', '').strip()
@@ -24,6 +28,11 @@ if not RAILWAY_URL or not SECRET:
 
 TIPOS_LOCALES = {'ACCION', 'CEDEAR', 'BONO', 'ON'}
 
+# Tickers que Yahoo publica con un nombre distinto al ticker interno
+TICKER_ALIAS = {
+    'TZX27': 'T2X27',  # Bono CER 2027 — Yahoo lo lista como T2X27.BA
+}
+
 # Mapa ticker interno → abreviación en la API de Galileo
 GALILEO_MAP = {
     'GALMS':  'GAMS',
@@ -31,7 +40,8 @@ GALILEO_MAP = {
 }
 
 def build_symbol(ticker, tipo_activo):
-    return f"{ticker}.BA" if tipo_activo in TIPOS_LOCALES else ticker
+    base = TICKER_ALIAS.get(ticker.upper(), ticker)
+    return f"{base}.BA" if tipo_activo in TIPOS_LOCALES else base
 
 def fetch_price(ticker, tipo_activo):
     symbol = build_symbol(ticker, tipo_activo)
@@ -59,7 +69,7 @@ def fetch_galileo_prices(fci_tickers):
     if not fci_tickers:
         return []
     try:
-        r = requests.get('https://www.galileoargentina.com.ar/api/fondos', timeout=10)
+        r = requests.get('https://www.galileoargentina.com.ar/api/fondos', timeout=10, verify=False)
         r.raise_for_status()
         fondos = r.json().get('items', [])
         fondos_by_abrev = {f['fields']['abreviacin']: f['fields'] for f in fondos if 'fields' in f}
