@@ -33,8 +33,10 @@ const ALLOWED_ORIGINS = [
 app.use(helmet());
 app.use(cors({
   origin: (origin, cb) => {
-    // Permitir requests sin origin (curl, Postman, Railway health check)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    if (!origin) return cb(null, true); // curl, Postman, health checks
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    // Cualquier deploy de Vercel de este proyecto
+    if (/^https:\/\/analisis-cartera-moderada-[^.]+\.vercel\.app$/.test(origin)) return cb(null, true);
     cb(new Error(`CORS bloqueado: ${origin}`));
   },
   credentials: true,
